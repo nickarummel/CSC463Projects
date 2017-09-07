@@ -1,0 +1,23 @@
+/* sample touch sensor program */
+void main()
+{
+    while(1){
+        /* go forward */
+        printf("FD\n");
+        fd(1);
+        fd(3);
+        /* test for touch */
+        if (digital(10) || digital(11)){
+            printf("TOUCH!\n");
+            /* go backwards */
+            bk(1);
+            bk(3);
+            printf("BK\n");
+            sleep(0.5);
+            /* turn */
+            fd(1);
+            printf("TURN\n");
+            sleep(0.5);
+        }
+    }
+}

@@ -1,0 +1,60 @@
+/*
+   part1.ic
+   Nick Rummel, Alex Medellin
+   CSC463-01
+   Fall 2017
+   Source code for assignment 1, part 1
+   Detecting a line with the single photo sensor
+*/
+
+int LEFT_MOTOR = 1;
+int RIGHT_MOTOR = 3;
+
+void forward()
+{
+    fd(LEFT_MOTOR);
+    fd(RIGHT_MOTOR);
+}
+
+void backward()
+{
+    bk(LEFT_MOTOR);
+    bk(RIGHT_MOTOR);
+}
+
+void right()
+{
+    fd(LEFT_MOTOR);
+    bk(RIGHT_MOTOR);
+}
+
+void left()
+{
+    bk(LEFT_MOTOR);
+    fd(RIGHT_MOTOR);
+}
+
+void stop()
+{
+    off(LEFT_MOTOR);
+    off(RIGHT_MOTOR);
+}
+
+void main()
+{
+    int sensor = analog(3);
+        
+      
+    while(1){
+        sensor = analog(3);
+        printf("s3=%d", sensor);
+        if(sensor < 0){
+            printf("Error\n");
+            sleep(1.0)
+          }
+        else{
+        forward();
+        sleep(2.0);
+        }
+    }
+} 
