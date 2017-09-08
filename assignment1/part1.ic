@@ -12,6 +12,7 @@ int RIGHT_MOTOR = 3;                  // port for right motor
 int LITESEN = 3;                      // analog port for the photo sensor
 int LIGHT_VALUE = 0;                  // value to determine if on tape
 
+
 /*
  * Method from textbook (turtle.ic)   
  * to move robot forwards
@@ -72,10 +73,6 @@ int getSensorValue()
     value = analog(LITESEN);
     
     printf("s3= %d", value);
-    if(value <=65)
-      printf("white\n");
-    else
-      printf("black\n");
     return value;
 }
 
@@ -83,7 +80,7 @@ void setLightValAvg()
 {
     int i = 0;
     int sum = 0;
-    while(i < 20){
+    while(i < 30){
         sum += analog(LITESEN);
         sleep(0.1);
         i++;
@@ -93,13 +90,15 @@ void setLightValAvg()
 
 void main()
 {
+    //float secs;
     int sensor = 0;
+    float last = 0.0;
     printf("Start\n");
     setLightValAvg();
     sensor = getSensorValue();            // stores value from photo sensor
     printf("AVG= %d", LIGHT_VALUE);
-    sleep(10.0);
-    while(1){
+    sleep(2.0);
+    while(!stop_button()){
         sensor = getSensorValue();
         if(sensor < 0){
             printf("Error\n");
@@ -110,8 +109,34 @@ void main()
                 forward();
             }
             else{
-                
-                printf("white\n");
+                while(!(sensor >= LIGHT_VALUE - 15)){
+                    printf("white\n");
+                    stop();
+                    if(last > 0.0){                         // go left (-) if went right last time
+                        last = last * -2.0;
+                        left();
+                        sleep(last * -1.0);
+                        stop();
+                        sensor = getSensorValue();
+                    }
+                    else{
+                        if(last < 0.0){                     // go right (+) if went left last time
+                            last = last * -2.0;
+                            right();
+                            sleep(last);
+                            stop();
+                            sensor = getSensorValue();
+                        } 
+                        else{                             // default (0.0) - go right
+                            last = 0.5;
+                            right();
+                            sleep(last);
+                            stop();
+                            sensor = getSensorValue();
+                        }
+                    }
+                }
+                last = 0.0;
             }
         }
     }
