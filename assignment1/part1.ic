@@ -19,8 +19,8 @@ int LIGHT_VALUE = 0;                  // value to determine if on tape
  */
 void forward()
 {
-    fd(LEFT_MOTOR);
-    fd(RIGHT_MOTOR);
+    motor(LEFT_MOTOR, 30);
+    motor(RIGHT_MOTOR, 30);
 }
 
 /*
@@ -29,28 +29,30 @@ void forward()
  */
 void backward()
 {
-    bk(LEFT_MOTOR);
-    bk(RIGHT_MOTOR);
+    motor(LEFT_MOTOR, -30);
+    motor(RIGHT_MOTOR, -30);
 }
 
 /*
  * Method from textbook (turtle.ic)
  * to move robot right
  */
-void right()
+void right(float time)
 {
-    fd(LEFT_MOTOR);
-    bk(RIGHT_MOTOR);
+    motor(LEFT_MOTOR, 90);
+    //motor(RIGHT_MOTOR, -90);
+    sleep(time);
 }
 
 /*
  * Method from textbook (turtle.ic)
  * to move robot left
  */
-void left()
+void left(float time)
 {
-    bk(LEFT_MOTOR);
-    fd(RIGHT_MOTOR);
+    //motor(LEFT_MOTOR, -90);
+    motor(RIGHT_MOTOR, 90);
+    sleep(time);
 }
 
 /*
@@ -85,7 +87,7 @@ void setLightValAvg()
         sleep(0.1);
         i++;
     }
-    LIGHT_VALUE = sum/20;
+    LIGHT_VALUE = sum/30;
 }
 
 void main()
@@ -104,33 +106,31 @@ void main()
             printf("Error\n");
         }
         else{
-            if(sensor >= LIGHT_VALUE - 15){
+            if(sensor >= LIGHT_VALUE - 12){
                 printf("black\n");
                 forward();
+                sleep(0.25);
             }
             else{
-                while(!(sensor >= LIGHT_VALUE - 15)){
+                while(!(sensor >= LIGHT_VALUE - 12)){
                     printf("white\n");
                     stop();
                     if(last > 0.0){                         // go left (-) if went right last time
                         last = last * -2.0;
-                        left();
-                        sleep(last * -1.0);
+                        left(last * -2.0);
                         stop();
                         sensor = getSensorValue();
                     }
                     else{
                         if(last < 0.0){                     // go right (+) if went left last time
                             last = last * -2.0;
-                            right();
-                            sleep(last);
+                            right(last);
                             stop();
                             sensor = getSensorValue();
                         } 
                         else{                             // default (0.0) - go right
                             last = 0.5;
-                            right();
-                            sleep(last);
+                            right(last);
                             stop();
                             sensor = getSensorValue();
                         }
