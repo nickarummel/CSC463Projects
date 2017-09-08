@@ -1,60 +1,118 @@
 /*
-   part1.ic
-   Nick Rummel, Alex Medellin
-   CSC463-01
-   Fall 2017
-   Source code for assignment 1, part 1
-   Detecting a line with the single photo sensor
-*/
+ * part1.ic
+ * Nick Rummel, Alex Medellin
+ * CSC463-01
+ * Fall 2017
+ * Source code for assignment 1, part 1
+ * Detecting a line with the single photo sensor
+ */
 
-int LEFT_MOTOR = 1;
-int RIGHT_MOTOR = 3;
+int LEFT_MOTOR = 1;                   // port for left motor
+int RIGHT_MOTOR = 3;                  // port for right motor
+int LITESEN = 3;                      // analog port for the photo sensor
+int LIGHT_VALUE = 0;                  // value to determine if on tape
 
+/*
+ * Method from textbook (turtle.ic)   
+ * to move robot forwards
+ */
 void forward()
 {
     fd(LEFT_MOTOR);
     fd(RIGHT_MOTOR);
 }
 
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot backwards
+ */
 void backward()
 {
     bk(LEFT_MOTOR);
     bk(RIGHT_MOTOR);
 }
 
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot right
+ */
 void right()
 {
     fd(LEFT_MOTOR);
     bk(RIGHT_MOTOR);
 }
 
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot left
+ */
 void left()
 {
     bk(LEFT_MOTOR);
     fd(RIGHT_MOTOR);
 }
 
+/*
+ * Method from textbook (turtle.ic)
+ * to stop robot from moving
+ */
 void stop()
 {
     off(LEFT_MOTOR);
     off(RIGHT_MOTOR);
 }
 
+/*
+ * Method to retrieve the light value
+ * from the robot's photo sensor
+ */
+int getSensorValue()
+{
+    int value;
+    value = analog(LITESEN);
+    
+    printf("s3= %d", value);
+    if(value <=65)
+      printf("white\n");
+    else
+      printf("black\n");
+    return value;
+}
+
+void setLightValAvg()
+{
+    int i = 0;
+    int sum = 0;
+    while(i < 20){
+        sum += analog(LITESEN);
+        sleep(0.1);
+        i++;
+    }
+    LIGHT_VALUE = sum/20;
+}
+
 void main()
 {
-    int sensor = analog(3);
-        
-      
+    int sensor = 0;
+    printf("Start\n");
+    setLightValAvg();
+    sensor = getSensorValue();            // stores value from photo sensor
+    printf("AVG= %d", LIGHT_VALUE);
+    sleep(10.0);
     while(1){
-        sensor = analog(3);
-        printf("s3=%d", sensor);
+        sensor = getSensorValue();
         if(sensor < 0){
             printf("Error\n");
-            sleep(1.0)
-          }
+        }
         else{
-        forward();
-        sleep(2.0);
+            if(sensor >= LIGHT_VALUE - 15){
+                printf("black\n");
+                forward();
+            }
+            else{
+                
+                printf("white\n");
+            }
         }
     }
 } 
