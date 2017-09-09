@@ -4,10 +4,10 @@ void main()
     while(1) {
         sensor = analog(3);
         printf("s3= %d", sensor);
-        if(sensor <=65)
+        if(sensor > 65)
           printf("white\n");
         else
           printf("black\n");
-        sleep(0.5);
+        sleep(1.0);
     }
 }

@@ -23,15 +23,15 @@ void backward(float time)
 
 void right(float time)
 {
-    motor(LEFT_MOTOR, 60);
-    motor(RIGHT_MOTOR, -60);
+    motor(LEFT_MOTOR, 90);
+    motor(RIGHT_MOTOR, -90);
     sleep(time);
 }
 
 void left(float time)
 {
-    motor(LEFT_MOTOR, -60);
-    motor(RIGHT_MOTOR, 60);
+    motor(LEFT_MOTOR, -90);
+    motor(RIGHT_MOTOR, 90);
     sleep(time);
 }
 
@@ -48,8 +48,9 @@ void main()
         
         backward(2.0);
         
+        stop();
+        
         left(2.0);
-        sleep(2.0);
         
         stop();
         
