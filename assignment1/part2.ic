@@ -1,0 +1,150 @@
+/*
+ * part2.ic
+ * Nick Rummel, Alex Medellin
+ * CSC463-01
+ * Fall 2017
+ * Source code for Assignment 1, Part 2
+ * Detecting a line with the IR sensor
+ */
+
+int LEFT_MOTOR = 1;                                         // port for left motor
+int RIGHT_MOTOR = 3;                                        // port for right motor
+int LITESEN = 3;                                            // analog port for the photo sensor
+int LIGHT_VALUE = 0;                                        // value to determine if on tape
+
+
+/*
+ * Method from textbook (turtle.ic)   
+ * to move robot forwards
+ */
+void forward()
+{
+    motor(LEFT_MOTOR, 30);
+    motor(RIGHT_MOTOR, 30);
+}
+
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot backwards
+ */
+void backward()
+{
+    motor(LEFT_MOTOR, -30);
+    motor(RIGHT_MOTOR, -30);
+}
+
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot right
+ */
+void right(float time)
+{
+    motor(LEFT_MOTOR, 85);
+    motor(RIGHT_MOTOR, -75);
+    sleep(time);
+}
+
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot left
+ */
+void left(float time)
+{
+    motor(LEFT_MOTOR, -75);
+    motor(RIGHT_MOTOR, 85);
+    sleep(time);
+}
+
+/*
+ * Method from textbook (turtle.ic)
+ * to stop robot from moving
+ */
+void stop(float time)
+{
+    off(LEFT_MOTOR);
+    off(RIGHT_MOTOR);
+    sleep(time);
+}
+
+/*
+ * Method to retrieve the light value
+ * from the robot's photo sensor
+ * and print the value to the LCD screen.
+ */
+int getSensorValue()
+{
+    int value;
+    value = analog(LITESEN);
+    
+    printf("s3= %d", value);
+    return value;
+}
+
+/*
+ * The photo sensor will take in several
+ * readings and compute the average of those
+ * values to determine a baseline for our
+ * light value range.
+ */
+void setLightValAvg()
+{
+    int i = 0;
+    int sum = 0;
+    while(i < 30){
+        sum += analog(LITESEN);
+        sleep(0.1);
+        i++;
+    }
+    LIGHT_VALUE = sum/30;
+}
+
+void main()
+{
+    int sensor = 0;
+    float last = 0.0;                                       // float used to determine if last move was left (-) or right (+)
+    printf("Start\n");
+    setLightValAvg();                                       // calculates the baseline light average
+    sensor = getSensorValue();                              // stores value from photo sensor
+    printf("AVG= %d", LIGHT_VALUE);
+    sleep(2.0);
+    while(!stop_button()){                                  // runs while we don't press the stop button
+        sensor = getSensorValue();
+        if(sensor < 0){
+            printf("Error\n");
+        }
+        else{
+            if(sensor >= LIGHT_VALUE - 12){                 // if the value is greater than/equal to (average - 12)
+                printf("black\n");
+                forward();                                  // go forward
+                
+            }
+            else{
+                while(!(sensor >= LIGHT_VALUE - 12)){       // if the average is not greater than/equal to (average - 12)
+                    printf("white\n");
+                    stop(0.2);
+                    if(last > 0.0){                         // go left (-) if went right last time
+                        last = last * -1.0;
+                        left((last + 0.2) * -1.0);
+                        stop(0.2);
+                        sensor = getSensorValue();          // Retrieve sensor's new value and loop
+                    }
+                    else{
+                        if(last < 0.0){                     // go right (+) if went left last time
+                            last = last * -1.0;
+                            right(last + 0.1);
+                            stop(0.2);
+                            sensor = getSensorValue();      // Retrieve sensor's new value and loop
+                        } 
+                        else{                               // default (0.0) - go left
+                            last = -0.2;
+                            left(last * -1.0);
+                            stop(0.2);
+                            sensor = getSensorValue();      // Retrieve sensor's new value and loop
+                        }
+                    }
+                }
+                last = 0.0;                                 // Reset value
+            }
+        }
+    }
+} 
