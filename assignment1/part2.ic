@@ -9,8 +9,8 @@
 
 int LEFT_MOTOR = 1;                                         // port for left motor
 int RIGHT_MOTOR = 3;                                        // port for right motor
-int LITESEN = 3;                                            // analog port for the photo sensor
-int LIGHT_VALUE = 0;                                        // value to determine if on tape
+int IRSEN = 3;                                              // analog port for the IR sensor
+int IR_VALUE = 0;                                           // value to determine if on tape
 
 
 /*
@@ -74,7 +74,7 @@ void stop(float time)
 int getSensorValue()
 {
     int value;
-    value = analog(LITESEN);
+    value = analog(IRSEN);
     
     printf("s3= %d", value);
     return value;
@@ -86,16 +86,16 @@ int getSensorValue()
  * values to determine a baseline for our
  * light value range.
  */
-void setLightValAvg()
+void setIRValAvg()
 {
     int i = 0;
     int sum = 0;
     while(i < 30){
-        sum += analog(LITESEN);
+        sum += analog(IRSEN);
         sleep(0.1);
         i++;
     }
-    LIGHT_VALUE = sum/30;
+    IR_VALUE = sum/30;
 }
 
 void main()
@@ -103,9 +103,9 @@ void main()
     int sensor = 0;
     float last = 0.0;                                       // float used to determine if last move was left (-) or right (+)
     printf("Start\n");
-    setLightValAvg();                                       // calculates the baseline light average
-    sensor = getSensorValue();                              // stores value from photo sensor
-    printf("AVG= %d", LIGHT_VALUE);
+    setIRValAvg();                                          // calculates the baseline light average
+    sensor = getSensorValue();                              // stores value from IR sensor
+    printf("AVG= %d", IR_VALUE);
     sleep(2.0);
     while(!stop_button()){                                  // runs while we don't press the stop button
         sensor = getSensorValue();
@@ -113,13 +113,13 @@ void main()
             printf("Error\n");
         }
         else{
-            if(sensor >= LIGHT_VALUE - 12){                 // if the value is greater than/equal to (average - 12)
+            if(sensor >= IR_VALUE - 50){                    // if the value is greater than/equal to (average - 50)
                 printf("black\n");
                 forward();                                  // go forward
                 
             }
             else{
-                while(!(sensor >= LIGHT_VALUE - 12)){       // if the average is not greater than/equal to (average - 12)
+                while(!(sensor >= IR_VALUE - 50)){          // if the average is not greater than/equal to (average - 50)
                     printf("white\n");
                     stop(0.2);
                     if(last > 0.0){                         // go left (-) if went right last time
