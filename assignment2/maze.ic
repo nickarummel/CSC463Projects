@@ -5,6 +5,14 @@
  * Fall 2017
  * Source code for Assignment 2
  * Navigating a maze with a touch sensor
+ *
+ * Algorithm is utilizing prediction based
+ * on a history of previous turns, where:
+ * -2 = strong left prediction; go left
+ * -1 = weak left prediction; go left
+ *  0 = no prediction; go left by default
+ *  1 = weak right prediction; go right
+ *  2 = strong right prediction; go right
  */
 
 int LEFT_MOTOR = 1;                                    // port for left motor
@@ -21,7 +29,7 @@ int history[size];                                     // array of values to det
 
 
 /*
- * Method from textbook (turtle.ic)   
+ * Function from textbook (turtle.ic)   
  * to move robot forwards
  */
 void forward(float time)
@@ -32,7 +40,7 @@ void forward(float time)
 }
 
 /*
- * Method from textbook (turtle.ic)
+ * Function from textbook (turtle.ic)
  * to move robot backwards
  */
 void backward(float time)
@@ -43,7 +51,7 @@ void backward(float time)
 }
 
 /*
- * Method from textbook (turtle.ic)
+ * Function from textbook (turtle.ic)
  * to move robot right
  */
 void right(float time)
@@ -54,7 +62,7 @@ void right(float time)
 }
 
 /*
- * Method from textbook (turtle.ic)
+ * Function from textbook (turtle.ic)
  * to move robot left
  */
 void left(float time)
@@ -65,7 +73,7 @@ void left(float time)
 }
 
 /*
- * Method from textbook (turtle.ic)
+ * Function from textbook (turtle.ic)
  * to stop robot from moving
  */
 void stop(float time)
@@ -87,25 +95,64 @@ void initialize_history()
 		history[i] = 0;
 }
 
+/*
+ * Moves the most recent history
+ * record and moves it to index 0.
+ * Then, all indices after 0 are
+ * reset to the value 0.
+ */
+void reset_history()
+{
+	int i;
+	history[0] = history[size - 1];
+	for(i = 0; i < size; i++)
+		history[i] = 0;
+}	
+
 
 
 void main()
 {
+	int i = 0;
     while(start_button());
 	
 	while(!stop_button())
 	{
 		if(digital(10) == 0 || digital(11) == 0)                        // touch sensors not pressed
 			forward(0.0);
-		else
+		else                                                            // touch sensors were pressed
 		{
+			if(i == size-1)                                             // if the history is full
+			{
+				reset_history();                                        // see function description
+				i = 0;                                                  // set index back to 0
+			}
 			
+			if((history[i] < 0)                                         //  prediction is left (-1 or -2)
+			{
+				left(1.0);
+				
+			}
+			
+			else
+			{
+				if((history[i]) > 0)                                    // prediction is right (1 or 2)
+				{
+					right(1.0);
+					
+				}
+				else                                                    // no prediction, go left
+				{
+					left(1.0);
+					
+				}
+			}
+			
+			
+			
+			i++;                                                        // only increment if a sensor was pressed
 		}
-			
-		
-		
-		
 		
 	}
 	
-} 
+}
