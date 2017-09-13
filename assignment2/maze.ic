@@ -8,18 +8,16 @@
  *
  * Algorithm is utilizing prediction based
  * on a history of previous turns, where:
- * -2 = strong left prediction; go left
- * -1 = weak left prediction; go left
+ * -1 = left prediction; go left
  *  0 = no prediction; go left by default
- *  1 = weak right prediction; go right
- *  2 = strong right prediction; go right
+ *  1 = right prediction; go right
  */
 
 int LEFT_MOTOR = 1;                                    // port for left motor
 int RIGHT_MOTOR = 3;                                   // port for right motor
 
-int l_touch = 10;                                      // left touch sensor port
-int r_touch = 11;                                      // right touch sensor port
+int L_TOUCH = 10;                                      // left touch sensor port
+int R_TOUCH = 11;                                      // right touch sensor port
 
 int size = 5;                                          // number of turns stored that were
                                                        // previously taken
@@ -107,18 +105,20 @@ void reset_history()
 	history[0] = history[size - 1];
 	for(i = 0; i < size; i++)
 		history[i] = 0;
-}	
-
-
+}
 
 void main()
 {
 	int i = 0;
+	int r_val = 0;
+	int l_val = 0;
     while(start_button());
 	
 	while(!stop_button())
 	{
-		if(digital(10) == 0 || digital(11) == 0)                        // touch sensors not pressed
+		l_val = digital(L_TOUCH);
+		r_val = digital(R_TOUCH);
+		if(l_val == 0 || r_val == 0)              // touch sensors not pressed
 			forward(0.0);
 		else                                                            // touch sensors were pressed
 		{
@@ -127,29 +127,23 @@ void main()
 				reset_history();                                        // see function description
 				i = 0;                                                  // set index back to 0
 			}
-			
-			if((history[i] < 0)                                         //  prediction is left (-1 or -2)
+			if(l_val == 1 || r_val == 0)
 			{
-				left(1.0);
-				
+				backward(0.5);
+				right(1.0);
+				//then set history
 			}
-			
+			if(l_val == 0 || digital(r_val == 1) 
+			{
+				backward(0.5);
+				left(1.0);
+				//then set history
+			}
 			else
 			{
-				if((history[i]) > 0)                                    // prediction is right (1 or 2)
-				{
-					right(1.0);
-					
-				}
-				else                                                    // no prediction, go left
-				{
-					left(1.0);
-					
-				}
+				
+			
 			}
-			
-			
-			
 			i++;                                                        // only increment if a sensor was pressed
 		}
 		
