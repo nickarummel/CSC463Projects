@@ -1,0 +1,29 @@
+/* sample touch sensor program */
+void main()
+{
+    while(1){
+        /* test for touch */
+        
+        if(digital(10))
+          {
+            sleep(0.1);
+            if(digital(11))
+              printf("TOUCH BOTH\n");
+            else
+              printf("TOUCH LEFT!\n");
+            sleep(1.0);
+        }
+        else{
+          if(digital(11))
+              {
+                sleep(0.1);
+                if(digital(10))
+                  printf("TOUCH BOTH\n");
+                else
+                  printf("TOUCH RIGHT\n");
+            sleep(1.0);
+        }
+        }
+        
+    }
+}
