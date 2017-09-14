@@ -136,6 +136,34 @@ void try_right()
 	stop(0.0);
 }
 
+/*
+ * Determines if both touch sensors are pressed.
+ * A sleep timer is used briefly in case a 
+ * one sensor is pressed in before the other.
+ * Returns 1 if both sensors are pressed, otherwise 0.
+ */
+int both_touch_press()
+{
+	if(digital(L_TOUCH))
+	{
+		sleep(0.1);
+		if(digital(R_TOUCH))
+		{
+			return 1;
+		}
+	}
+	if(digital(R_TOUCH))
+	{
+		sleep(0.1);
+		if(digital(L_TOUCH))
+		{
+			return 1;
+		}
+	}
+	else
+		return 0;
+}
+
 void main()
 {
 	int i = 0;
@@ -159,13 +187,13 @@ void main()
 				reset_history();                                        			// see function description
 				i = 0;                                                 		    	// set index back to 0
 			}
-			if(l_val == 1 && r_val == 0)											// detected left, go right
+			if(!both_touch_press() && (l_val == 1 && r_val == 0)	)				// detected left, go right
 			{
 				printf("T-Left: Right!\n");
 				backward(0.5);
 				right(1.0);
 			}
-			if(l_val == 0 && r_val == 1) 											// detected right, go left
+			if(!both_touch_press() && (l_val == 0 && r_val == 1)) 					// detected right, go left
 			{
 				printf("T-Right: Left!\n");
 				backward(0.5);
@@ -177,10 +205,10 @@ void main()
 					if(history[i] == 0)
 					{
 						try_left();
-						if(digital(L_TOUCH) == 1 || digital(R_TOUCH) == 1)			// check if sensors are pressed
+						if(both_touch_press())										// check if sensors are pressed
 						{
 							try_right();
-							if(digital(L_TOUCH) == 0 && digital(R_TOUCH) == 0)		// check that sensors are not pressed
+							if(!both_touch_press())									// check that sensors are not pressed
 							{
 								printf("Success: Right\n");
 								history[i+1] = 1;									// success! record right for history
@@ -200,10 +228,10 @@ void main()
 					if(history[i] > 0)
 					{
 						try_right();
-						if(digital(L_TOUCH) == 1 || digital(R_TOUCH) == 1)			// check if sensors are pressed
+						if(both_touch_press())										// check if sensors are pressed
 						{
 							try_left();
-							if(digital(L_TOUCH) == 0 && digital(R_TOUCH) == 0)		// check that sensors are not pressed
+							if(!both_touch_press())									// check that sensors are not pressed
 							{
 								printf("Success: Left\n");
 								history[i+1] = -1;									// success! record left for history
@@ -219,10 +247,10 @@ void main()
 						else
 						{
 							try_left();
-							if(digital(L_TOUCH) == 1 || digital(R_TOUCH) == 1)		// check if sensors are pressed
+							if(both_touch_press())									// check if sensors are pressed
 							{
 								try_right();
-								if(digital(L_TOUCH) == 0 || digital(R_TOUCH) == 0)	// check that sensors are not pressed
+								if(!both_touch_press())								// check that sensors are not pressed
 								{
 									printf("Success: Right\n");
 									history[i+1] = 1;								// success! record right for history
