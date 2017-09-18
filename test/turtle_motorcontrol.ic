@@ -9,29 +9,29 @@ int RIGHT_MOTOR = 3;
 
 void forward(float time)
 {
-    motor(LEFT_MOTOR, 30);
-    motor(RIGHT_MOTOR, 30);
+    motor(LEFT_MOTOR, 50);
+    motor(RIGHT_MOTOR, 50);
     sleep(time);
 }
 
 void backward(float time)
 {
-    motor(LEFT_MOTOR, -30);
-    motor(RIGHT_MOTOR, -30);
+    motor(LEFT_MOTOR, -50);
+    motor(RIGHT_MOTOR, -50);
     sleep(time);
 }
 
 void right(float time)
 {
-    motor(LEFT_MOTOR, 90);
-    motor(RIGHT_MOTOR, -90);
+    motor(LEFT_MOTOR, 85);
+    motor(RIGHT_MOTOR, -85);
     sleep(time);
 }
 
 void left(float time)
 {
-    motor(LEFT_MOTOR, -90);
-    motor(RIGHT_MOTOR, 90);
+    motor(LEFT_MOTOR, -85);
+    motor(RIGHT_MOTOR, 85);
     sleep(time);
 }
 
@@ -43,7 +43,13 @@ void stop()
 
 void main()
 {
-    while(1){
+    while(!start_button());
+    printf("Start!");
+    while(1)
+      {
+        if(stop_button())
+          break;
+        else{
         forward(2.0);
         
         backward(2.0);
@@ -57,6 +63,7 @@ void main()
         right(2.0);
         
         stop();
-        sleep(2.0);
+            sleep(2.0);
+        }
     }
 } 
