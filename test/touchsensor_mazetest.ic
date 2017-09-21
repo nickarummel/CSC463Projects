@@ -1,29 +1,74 @@
 /* sample touch sensor program */
+
+int LEFT_MOTOR = 1;
+int RIGHT_MOTOR = 3;
+
+void forward(float time)
+{
+    motor(LEFT_MOTOR, 50);
+    motor(RIGHT_MOTOR, 50);
+    sleep(time);
+}
+
+void backward(float time)
+{
+    motor(LEFT_MOTOR, -50);
+    motor(RIGHT_MOTOR, -50);
+    sleep(time);
+}
+
+void right(float time)
+{
+    motor(LEFT_MOTOR, 85);
+    motor(RIGHT_MOTOR, -85);
+    sleep(time);
+}
+
+void left(float time)
+{
+    motor(LEFT_MOTOR, -85);
+    motor(RIGHT_MOTOR, 85);
+    sleep(time);
+}
+
+void stop()
+{
+    off(LEFT_MOTOR);
+    off(RIGHT_MOTOR);
+}
+
 void main()
 {
     while(1){
         /* test for touch */
-        
+        forward(0.0);
         if(digital(10))
           {
             sleep(0.1);
-            if(digital(11))
-              printf("TOUCH BOTH\n");
+            if(digital(11)){
+                printf("TOUCH BOTH\n");
+                backward(1.0);
+                stop();
+                
+            }
             else
               printf("TOUCH LEFT!\n");
             sleep(0.25);
-
+            
         }
         else{
             if(digital(11))
               {
                 sleep(0.1);
-                if(digital(10))
-                  printf("TOUCH BOTH\n");
+                if(digital(10)){
+                    printf("TOUCH BOTH\n");
+                    backward(1.0);
+                    stop();
+                }
                 else
                   printf("TOUCH RIGHT\n");
                 sleep(0.25);
- 
+                
             }
         }
         

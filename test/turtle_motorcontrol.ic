@@ -44,25 +44,29 @@ void stop()
 void main()
 {
     while(!start_button());
-    printf("Start!");
+    printf("\nStart!");
     while(1)
       {
         if(stop_button())
-          break;
+          {
+            off(LEFT_MOTOR);
+            off(RIGHT_MOTOR);
+            break;
+        }
         else{
-        forward(2.0);
-        
-        backward(2.0);
-        
-        stop();
-        
-        left(2.0);
-        
-        stop();
-        
-        right(2.0);
-        
-        stop();
+            //forward(1.0);
+            
+            backward(1.0);
+            
+            stop();
+            
+            //left(1.2);
+            
+            stop();
+            
+            right(1.2);
+            
+            stop();
             sleep(2.0);
         }
     }
