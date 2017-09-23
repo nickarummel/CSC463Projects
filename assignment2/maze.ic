@@ -14,13 +14,13 @@
  *  1 = right prediction; go right
  */
 
-int LEFT_MOTOR = 1;                                    // port for left motor
-int RIGHT_MOTOR = 3;                                   // port for right motor
+int LEFT_MOTOR = 1;                                               // port for left motor
+int RIGHT_MOTOR = 3;                                              // port for right motor
 
-int L_TOUCH = 10;                                      // left touch sensor port
-int R_TOUCH = 11;                                      // right touch sensor port
+int L_TOUCH = 10;                                                 // left touch sensor port
+int R_TOUCH = 11;                                                 // right touch sensor port
 
-int size = 5;                                          // number of turns stored that were
+int size = 5;                                                     // number of turns stored that were
 // previously taken
 
 int history[5] = {0,0,0,0,0};                                     // array of values to determine
@@ -149,7 +149,6 @@ int both_touch_press()
         sleep(0.1);
         if(digital(R_TOUCH))
           {
-            //spot to add sleep()
             return 1;
         }
     }
@@ -158,7 +157,6 @@ int both_touch_press()
         sleep(0.1);
         if(digital(L_TOUCH))
           {
-            //spot to add sleep()
             return 1;
         }
     }
@@ -166,66 +164,64 @@ int both_touch_press()
       return 0;
 }
 
+/*
+ * Adds the right or left turn to the history
+ * array if it was successful (no sensors are
+ * still being pressed). 
+ */
+void set_history(int index, int turn)
+{
+	if(!both_touch_press())
+    {
+		if(turn < 0)
+			printf("Success: Left\n");
+		if(turn > 0)
+			printf("Success: Right\n");
+        history[index+1] = turn;
+    } 
+}
+
 void main()
 {
     int i = 0;
-    //int r_val = 0;
-    //int l_val = 0;
     while(!start_button());
     printf("Start!");
-    while(1){
+    while(1)
+	{
         if(stop_button())
-          {
+        {
             stop(0.0);
             break;
         }
         if(!stop_button())
-          {
-            //l_val = digital(L_TOUCH);
-            //r_val = digital(R_TOUCH);
-            if(digital(L_TOUCH) == 0 && digital(R_TOUCH) == 0)                       // touch sensors not pressed
-              {
+        {
+            if(digital(L_TOUCH) == 0 && digital(R_TOUCH) == 0)           // touch sensors not pressed
+            {
                 printf("Forward!\n");
                 forward(0.0);
             }
-            else                                                                // touch sensors were pressed
-              {
-                if(i == size-1)                                                // if the history is full
-                  {
-                    reset_history();                                           // see function description
-                    i = 0;                                                        // set index back to 0
+            else                                                         // touch sensors were pressed
+            {
+                if(i == size-1)                                          // if the history is full
+                {
+                    reset_history();                                     // see function description
+                    i = 0;                                               // set index back to 0
                 }
-                /*                 if((digital(L_TOUCH) == 1 && digital(R_TOUCH) == 0) )    // detected left, go right
-                  {
-                    printf("T-Left: Right!\n");
-                    backward(1.0);
-                    right(1.2);
-                }
-                if((digital(L_TOUCH) == 0 && digital(R_TOUCH) == 1))      // detected right, go left
-                  {
-                    printf("T-Right: Left!\n");
-                    backward(1.0);
-                    left(1.2);
-                } */
-                else                 // both sensors pressed
-                  {
+                else                                                     // both sensors pressed
+                {
                     /* default - try left first */
                     if(history[i] == 0)
-                      {
+					{
                         try_left();
-                        if(both_touch_press())          // check if sensors are pressed
-                          {
+                        if(both_touch_press())                           // check if sensors are pressed
+                        {
                             try_right();
-                            if(!both_touch_press())         // check that sensors are not pressed
-                              {
-                                printf("Success: Right\n");
-                                history[i+1] = 1;         // success! record right for history
-                            } 
+							set_history(i, 1)
                         }
                         else
-                          {
+                        {
                             printf("Success: Left\n");
-                            history[i+1] = -1;          // success! record left for history
+                            history[i+1] = -1;                           // success! record left for history
                         }
                         
                     }
@@ -236,36 +232,28 @@ void main()
                         if(history[i] > 0)
                           {
                             try_right();
-                            if(both_touch_press())          // check if sensors are pressed
-                              {
+                            if(both_touch_press())                        // check if sensors are pressed
+                            {
                                 try_left();
-                                if(!both_touch_press())         // check that sensors are not pressed
-                                  {
-                                    printf("Success: Left\n");
-                                    history[i+1] = -1;         // success! record left for history
-                                }
+								set_history(i, -1);
                             }
                             else
-                              {
+                            {
                                 printf("Success: Right\n");
-                                history[i+1] = 1;          // success! record right for history
+                                history[i+1] = 1;                         // success! record right for history
                             }
                             
                             /* left last time (-1), so try left first */
                             if(history[i] < 0)
-                              {
+                            {
                                 try_left();
                                 if(both_touch_press())                    // check if sensors are pressed
-                                  {
+                                {
                                     try_right();
-                                    if(!both_touch_press())               // check that sensors are not pressed
-                                      {
-                                        printf("Success: Right\n");
-                                        history[i+1] = 1;                 // success! record right for history
-                                    } 
+									set_history(i, 1);
                                 }
                                 else
-                                  {
+                                {
                                     printf("Success: Left\n");
                                     history[i+1] = -1;                    // success! record left for history
                                 }
