@@ -1,0 +1,131 @@
+/*
+ * line_fuzzy.ic
+ * Nick Rummel, Alex Medellin
+ * CSC463-01
+ * Fall 2017
+ * Source code for Assignment 3
+ * Detecting a line with 2 IR sensors
+ * utilizing fuzzy logic.
+ */
+
+int LEFT_MOTOR = 1;                                         // port for left motor
+int RIGHT_MOTOR = 3;                                        // port for right motor
+int LEFT_IRSEN = 4;                                         // analog port for left IR sensor
+int RIGHT_IRSEN = 3;										// analog port for right IR sensor
+int IR_VALUE = 0;                                           // value to determine if on tape
+
+
+/*
+ * Function to move robot forward
+ * with a specific amount of power 
+ * for a specific length of time
+ */
+void forward(float time, int power)
+{
+    motor(LEFT_MOTOR, power);
+    motor(RIGHT_MOTOR, power);
+    sleep(time);
+}
+
+/*
+ * Function to move robot backwards
+ * with a specific amount of power 
+ * for a specific length of time
+ */
+void backward(float time, int power)
+{
+    motor(LEFT_MOTOR, power);
+    motor(RIGHT_MOTOR, power);
+    sleep(time);
+}
+
+/*
+ * Function to turn the robot
+ * with a specific amount of power
+ * going to each motor for a
+ * specific length of time
+ */
+void turn(float time, int l_power, int r_power)
+{
+    motor(LEFT_MOTOR, l_power);
+    motor(RIGHT_MOTOR, r_power);
+    sleep(time);
+}
+
+/*
+ * Function to stop the robot from
+ * moving for a specified span of time
+ */
+void stop(float time)
+{
+    off(LEFT_MOTOR);
+    off(RIGHT_MOTOR);
+    sleep(time);
+}
+
+/*
+ * Method to retrieve the left sensor value
+ * from the robot's IR sensor
+ * and print the value to the LCD screen.
+ */
+int getLeftSensorValue()
+{
+    int value;
+    value = analog(IRSEN);
+    
+    printf("L= %d\n", value);
+    return value;
+}
+
+/*
+ * Method to retrieve the right sensor value
+ * from the robot's IR sensor
+ * and print the value to the LCD screen.
+ */
+int getRightSensorValue()
+{
+    int value;
+    value = analog(IRSEN);
+    
+    printf("R= %d\n", value);
+    return value;
+}
+
+/*
+ * The each IR sensor will take in 30 value
+ * readings and compute the average of those
+ * values to determine a baseline for our
+ * light value range.
+ */
+void setIRValAvg()
+{
+    int i = 0;
+    int sum = 0;
+    while(i < 30){
+        sum += analog(LEFT_IRSEN);
+		sum += analog(RIGHT_IRSEN);
+        sleep(0.1);
+        i++;
+    }
+    IR_VALUE = sum/60;
+}
+
+void main()
+{
+	int i = 0;
+    while(!start_button());
+    printf("Start!");
+	setIRValAvg();
+    while(1)
+	{
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	}
+} 
