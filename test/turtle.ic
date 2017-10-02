@@ -39,7 +39,9 @@ void stop()
 
 void main()
 {
-    while(1){
+    while(!start_button());
+    printf("Start");
+    while(!stop_button()){
         forward();
         sleep(2.0);
         
@@ -55,4 +57,5 @@ void main()
         stop();
         sleep(2.0);
     }
+    alloff();
 } 
