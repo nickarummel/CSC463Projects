@@ -15,6 +15,9 @@ int RIGHT_IRSEN = 3;                   // analog port for right IR sensor
 int IR_VALUE = 0;                                           // value to determine if on tape
 int range = 0;
 int initial_delta = 0;
+int l_power = 35;
+int r_power = 35;
+int default_power = 35;
 
 
 /*
@@ -47,11 +50,12 @@ void backward(float time, int power)
  * going to each motor for a
  * specific length of time
  */
-void turn(float time, int l_power, int r_power)
+void turn(int right, int left)
 {
-    motor(LEFT_MOTOR, l_power);
+    l_power = l_power + left;
+    r_power = r_power + right;
     motor(RIGHT_MOTOR, r_power);
-    sleep(time);
+    motor(LEFT_MOTOR, l_power);
 }
 
 /*
@@ -121,54 +125,28 @@ int calculateDelta()
 
 void fuzzify(int delta)
 {
-    int calc_val = 0;
-    // Negative Big
-    if(delta < -1*range)
-      {
-        //printf(" NB");
-        calc_val = (int)((float)(abs_val(delta) - 100)*(1.25));
-        defuzzify(calc_val, calc_val * -1);
-        return;
-    }
-    // Negative Small
-    if((delta < (-1)*IR_VALUE) && (delta >= -1*range))
-      {
-        //printf(" NS");
-        calc_val = (int)((float)delta *0.25);
-        defuzzify(calc_val * -1, calc_val);
-        return;
-    }
-    // Positive Small
-    if((delta > IR_VALUE) && ((delta <= range)))
-      {
-        //printf(" PS");
-        calc_val = (int)((float)delta * 0.25);
-        defuzzify(calc_val * -1, calc_val);
-        return;
-    }
-    // Positive Big
-    if(delta > range)
-      {
-        //printf(" PB");
-        calc_val = (int)((float)(abs_val(delta) - 100)*(1.25));
-        defuzzify(calc_val * -1, calc_val);
-        return;
-    }
-    // -IR_VALUE < x <IR_VALUE
-    else
-      {
-        //printf(" 1STD");
-        calc_val = 75 - abs_val(delta);
-        defuzzify(calc_val, calc_val);
-        return;
-    }
+    float calc_val = (float)delta/255.0;
+    l_power = default_power;
+    r_power = default_power;
+    defuzzify(calc_val);
+
+    
 }
 
-void defuzzify(int right, int left){
+void defuzzify(float fuzz_val){
     //printf("\nR= %d, L= %d", right, left);
-    motor(RIGHT_MOTOR, right);
-    motor(LEFT_MOTOR, left);
-    sleep(0.5);
+    if(fuzz_val < 0.0){
+        fuzz_val = fuzz_val*100.0*4.0;
+        turn(abs_val((int)fuzz_val), (int)fuzz_val);
+        return;
+    }
+    if(fuzz_val > 0.0){
+        fuzz_val = fuzz_val*100.0*4.0;
+        turn((int)(fuzz_val*-1.0), (int)fuzz_val);
+        return;
+    }
+    else
+      turn(0, 0);
 }
 
 /*
@@ -190,13 +168,13 @@ void main()
     while(1){
         while(!start_button());
         printf("\nStart!");
-        setIRValAvg();
-        printf("\nAvg= %d", IR_VALUE);
-        sleep(1.0);
-        range = IR_VALUE+50;
-        initial_delta = abs_val(calculateDelta());
-        printf("\nInit.D= %d", initial_delta);
-        sleep(1.0);
+        //setIRValAvg();
+        //printf("\nAvg= %d", IR_VALUE);
+        //sleep(1.0);
+        //range = IR_VALUE+15;
+        //initial_delta = abs_val(calculateDelta());
+        //printf("\nInit.D= %d", initial_delta);
+        //sleep(1.0);
         while(!stop_button())
           {
             delta = calculateDelta();
