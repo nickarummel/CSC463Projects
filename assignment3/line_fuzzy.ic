@@ -4,20 +4,17 @@
  * CSC463-01
  * Fall 2017
  * Source code for Assignment 3
- * Detecting a line with 2 IR sensors
+ * Detecting a line with 2 light sensors
  * utilizing fuzzy logic.
  */
 
 int LEFT_MOTOR = 1;                                         // port for left motor
 int RIGHT_MOTOR = 3;                                        // port for right motor
 int LEFT_IRSEN = 4;                                         // analog port for left IR sensor
-int RIGHT_IRSEN = 3;                   // analog port for right IR sensor
-int IR_VALUE = 0;                                           // value to determine if on tape
-int range = 0;
-int initial_delta = 0;
-int l_power = 35;
-int r_power = 35;
-int default_power = 35;
+int RIGHT_IRSEN = 3;                   						// analog port for right IR sensor
+int l_power = 35;											// current power for the left motor
+int r_power = 35;											// current power for the right motor
+int default_power = 35;										// value that resets the motor power
 
 
 /*
@@ -47,8 +44,7 @@ void backward(float time, int power)
 /*
  * Function to turn the robot
  * with a specific amount of power
- * going to each motor for a
- * specific length of time
+ * going to each motor.
  */
 void turn(int right, int left)
 {
@@ -97,44 +93,30 @@ int getRightSensorValue()
     return value;
 }
 
-/*
- * The each IR sensor will take in 30 value
- * readings and compute the average of those
- * values to determine a baseline for our
- * light value range.
- */
-void setIRValAvg()
-{
-    int i = 0;
-    int sum = 0;
-    while(i < 30){
-        sum += analog(LEFT_IRSEN);
-        sum += analog(RIGHT_IRSEN);
-        sleep(0.1);
-        i++;
-    }
-    IR_VALUE = sum/60;
-}
-
 int calculateDelta()
 {
     int delta = getRightSensorValue() - getLeftSensorValue();
-    //printf("\nD=%d", delta);
     return delta;
 }
 
+/*
+ * Takes the calculated difference
+ * of the crisp input values
+ * and calculates a fuzzy value.
+ */
 void fuzzify(int delta)
 {
     float calc_val = (float)delta/255.0;
     l_power = default_power;
     r_power = default_power;
     defuzzify(calc_val);
-
-    
 }
 
+/*
+ * Takes the fuzzy value and maps it
+ * to a crisp output value for turning.
+ */
 void defuzzify(float fuzz_val){
-    //printf("\nR= %d, L= %d", right, left);
     if(fuzz_val < 0.0){
         fuzz_val = fuzz_val*100.0*4.0;
         turn(abs_val((int)fuzz_val), (int)fuzz_val);
@@ -162,21 +144,10 @@ int abs_val(int value){
 
 void main()
 {
-    
-    //int i = 0;
-    int delta = 0;
     while(1){
         while(!start_button());
         printf("\nStart!");
-        //setIRValAvg();
-        //printf("\nAvg= %d", IR_VALUE);
-        //sleep(1.0);
-        //range = IR_VALUE+15;
-        //initial_delta = abs_val(calculateDelta());
-        //printf("\nInit.D= %d", initial_delta);
-        //sleep(1.0);
-        while(!stop_button())
-          {
+        while(!stop_button()){
             delta = calculateDelta();
             fuzzify(delta);
         }
