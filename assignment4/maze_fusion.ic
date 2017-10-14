@@ -1,0 +1,114 @@
+/*
+ * maze_fusion.ic
+ * Nick Rummel, Alex Medellin
+ * CSC463-01
+ * Fall 2017
+ * Source code for Assignment 4
+ * Navigating a maze with two sensors:
+ * - IR Sensor for determining how close
+ * the robot is to a wall
+ * - Photo Sensor for determining if the
+ * robot is approaching the end of the maze
+ * (a lamp is placed at the end of the maze)
+ */
+
+int LEFT_MOTOR = 1;                                                 // port for left motor
+int RIGHT_MOTOR = 3;                                                // port for right motor
+
+int IR_SEN = 4;														// IR sensor port
+int PHOTO_SEN = 3;                                                  // photo sensor port
+
+
+
+/*
+ * Function from textbook (turtle.ic)   
+ * to move robot forwards
+ */
+void forward(float time)
+{
+    motor(LEFT_MOTOR, 60);
+    motor(RIGHT_MOTOR, 60);
+    sleep(time);
+}
+
+/*
+ * Function from textbook (turtle.ic)
+ * to move robot backwards
+ */
+void backward(float time)
+{
+    motor(LEFT_MOTOR, -50);
+    motor(RIGHT_MOTOR, -50);
+    sleep(time);
+}
+
+/*
+ * Function from textbook (turtle.ic)
+ * to move robot right
+ */
+void right(float time)
+{
+    motor(LEFT_MOTOR, 85);
+    motor(RIGHT_MOTOR, -85);
+    sleep(time);
+}
+
+/*
+ * Function from textbook (turtle.ic)
+ * to move robot left
+ */
+void left(float time)
+{
+    motor(LEFT_MOTOR, -85);
+    motor(RIGHT_MOTOR, 85);
+    sleep(time);
+}
+
+/*
+ * Function from textbook (turtle.ic)
+ * to stop robot from moving
+ */
+void stop(float time)
+{
+    off(LEFT_MOTOR);
+    off(RIGHT_MOTOR);
+    sleep(time);
+}
+
+int getIRValue()
+{
+	int val = 0;
+	val = analog(IR_SEN);
+	printf("\nIR= %d ", val);
+	return val;
+}
+
+int getPhotoValue()
+{
+	int val = 0;
+	val = analog(PHOTO_SEN);
+	printf("LITE= %d", val);
+	return val;
+}
+
+void getAllSensorValues()
+{
+	int ir = 0;
+	int photo = 0;
+	
+	ir = getIRValue();
+	photo = getPhotoValue();
+}
+
+
+
+void main()
+{
+    while(!start_button());
+    printf("Start!");
+    while(!stop_button)
+	{
+        
+	}
+	alloff();
+}
