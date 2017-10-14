@@ -91,13 +91,35 @@ int getPhotoValue()
 	return val;
 }
 
-void getAllSensorValues()
+void calculateMove()
 {
 	int ir = 0;
 	int photo = 0;
 	
 	ir = getIRValue();
 	photo = getPhotoValue();
+	
+	if(ir < 127 && photo > 50)
+	{
+		// movement method
+		return;
+	}
+	if(ir >=127 && photo > 50)
+	{
+		// movement mkdir
+		return;
+	}
+	if(ir < 127 && photo < 50)
+	{
+		// movement method
+		return;
+	}
+	if(ir >= 127 && photo < 50)
+	{
+		// movement method
+		return;
+		
+	}
 }
 
 
