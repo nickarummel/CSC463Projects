@@ -28,7 +28,7 @@ void forward(float time)
 {
     motor(LEFT_MOTOR, 60);
     motor(RIGHT_MOTOR, 60);
-    sleep(time);
+	sleep(time);
 }
 
 /*
@@ -99,26 +99,28 @@ void calculateMove()
 	ir = getIRValue();
 	photo = getPhotoValue();
 	
-	if(ir < 127 && photo > 50)
+	// no wall detected
+	if(ir < 127)
 	{
-		// movement method
+		forward(0.0);
 		return;
 	}
-	if(ir >=127 && photo > 50)
+	
+	// wall detected (or extra light detected)
+	else
 	{
-		// movement mkdir
-		return;
-	}
-	if(ir < 127 && photo < 50)
-	{
-		// movement method
-		return;
-	}
-	if(ir >= 127 && photo < 50)
-	{
-		// movement method
-		return;
-		
+		// brighter light, so near end of maze
+		if(photo < 50)
+		{
+			forward(0.0);
+			return;
+		}
+		// low light, so wall found
+		else
+		{
+			right(0.0);
+			return;
+		}
 	}
 }
 
@@ -130,7 +132,7 @@ void main()
     printf("Start!");
     while(!stop_button)
 	{
-        
+        calculateMove();
 	}
 	alloff();
 }
