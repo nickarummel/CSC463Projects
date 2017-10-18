@@ -15,7 +15,8 @@
 int LEFT_MOTOR = 1;                                                 // port for left motor
 int RIGHT_MOTOR = 3;                                                // port for right motor
 
-int IR_SEN = 4;														// IR sensor port
+int L_IR_SEN = 4;                          // left IR sensor port
+int R_IR_SEN = 5;             // right IR sensor port
 int PHOTO_SEN = 3;                                                  // photo sensor port
 
 
@@ -26,9 +27,9 @@ int PHOTO_SEN = 3;                                                  // photo sen
  */
 void forward(float time)
 {
-    motor(LEFT_MOTOR, 60);
-    motor(RIGHT_MOTOR, 60);
-	sleep(time);
+    motor(LEFT_MOTOR, 50);
+    motor(RIGHT_MOTOR, 50);
+    sleep(time);
 }
 
 /*
@@ -48,8 +49,8 @@ void backward(float time)
  */
 void right(float time)
 {
-    motor(LEFT_MOTOR, 85);
-    motor(RIGHT_MOTOR, -85);
+    motor(LEFT_MOTOR, 95);
+    motor(RIGHT_MOTOR, -95);
     sleep(time);
 }
 
@@ -59,8 +60,8 @@ void right(float time)
  */
 void left(float time)
 {
-    motor(LEFT_MOTOR, -85);
-    motor(RIGHT_MOTOR, 85);
+    motor(LEFT_MOTOR, -95);
+    motor(RIGHT_MOTOR, 95);
     sleep(time);
 }
 
@@ -75,53 +76,55 @@ void stop(float time)
     sleep(time);
 }
 
-int getIRValue()
+int getIRValue(int port)
 {
-	int val = 0;
-	val = analog(IR_SEN);
-	printf("\nIR= %d ", val);
-	return val;
+    int val = 0;
+    val = analog(port);
+    printf("\n%d IR= %d ", port, val);
+    return val;
 }
 
 int getPhotoValue()
 {
-	int val = 0;
-	val = analog(PHOTO_SEN);
-	printf("LITE= %d", val);
-	return val;
+    int val = 0;
+    val = analog(PHOTO_SEN);
+    printf("LITE= %d", val);
+    return val;
 }
 
 void calculateMove()
 {
-	int ir = 0;
-	int photo = 0;
-	
-	ir = getIRValue();
-	photo = getPhotoValue();
-	
-	// no wall detected
-	if(ir < 127)
-	{
-		forward(0.0);
-		return;
-	}
-	
-	// wall detected (or extra light detected)
-	else
-	{
-		// brighter light, so near end of maze
-		if(photo < 50)
-		{
-			forward(0.0);
-			return;
-		}
-		// low light, so wall found
-		else
-		{
-			right(0.0);
-			return;
-		}
-	}
+    int l_ir = 0;
+    int r_ir = 0;
+    int photo = 0;
+    
+    l_ir = getIRValue(L_IR_SEN);
+    r_ir = getIRValue(R_IR_SEN);
+    photo = getPhotoValue();
+    
+    // no wall detected
+    if(l_ir > 237 && r_ir > 240)
+      {
+        forward(0.0);
+        return;
+    }
+    
+    // wall detected (or extra light detected)
+    else
+      {
+        // brighter light, so near end of maze
+        if(photo < 50)
+          {
+            forward(0.0);
+            return;
+        }
+        // low light, so wall found
+        else
+          {
+            left(0.0);
+            return;
+        }
+    }
 }
 
 
@@ -130,9 +133,9 @@ void main()
 {
     while(!start_button());
     printf("Start!");
-    while(!stop_button)
-	{
+    while(!stop_button())
+      {
         calculateMove();
-	}
-	alloff();
+    }
+    alloff();
 }
