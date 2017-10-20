@@ -103,7 +103,7 @@ void calculateMove()
     photo = getPhotoValue();
     
     // no wall detected
-    if(l_ir > 237 && r_ir > 240)
+    if(l_ir >= 240 && r_ir >= 240)
       {
         forward(0.0);
         return;
@@ -121,8 +121,18 @@ void calculateMove()
         // low light, so wall found
         else
           {
-            left(0.0);
-            return;
+            if(l_ir > r_ir){
+                backward(1.0);
+                left(0.75);
+                forward(0.25);
+                return;
+            }
+            else{
+                backward(1.0);
+                right(0.75);
+                forward(0.25);
+                return;
+            }
         }
     }
 }
