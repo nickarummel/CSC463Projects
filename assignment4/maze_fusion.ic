@@ -15,10 +15,10 @@
 int LEFT_MOTOR = 1;                                                 // port for left motor
 int RIGHT_MOTOR = 3;                                                // port for right motor
 
-int L_IR_SEN = 4;                          // left IR sensor port
-int R_IR_SEN = 5;             // right IR sensor port
-int PHOTO_SEN = 3;                                                  // photo sensor port
-
+int L_IR_SEN = 5;                                                   // left IR sensor port
+int R_IR_SEN = 4;                         // right IR sensor port
+int R_PHOTO_SEN = 3;                                                // right photo sensor port
+int L_PHOTO_SEN = 6;            // left photo sensor port
 
 
 /*
@@ -27,8 +27,8 @@ int PHOTO_SEN = 3;                                                  // photo sen
  */
 void forward(float time)
 {
-    motor(LEFT_MOTOR, 50);
-    motor(RIGHT_MOTOR, 50);
+    motor(LEFT_MOTOR, 65);
+    motor(RIGHT_MOTOR, 65);
     sleep(time);
 }
 
@@ -38,8 +38,8 @@ void forward(float time)
  */
 void backward(float time)
 {
-    motor(LEFT_MOTOR, -50);
-    motor(RIGHT_MOTOR, -50);
+    motor(LEFT_MOTOR, -65);
+    motor(RIGHT_MOTOR, -65);
     sleep(time);
 }
 
@@ -80,30 +80,61 @@ int getIRValue(int port)
 {
     int val = 0;
     val = analog(port);
-    printf("\n%d IR= %d ", port, val);
+    //printf("\n%d IR= %d ", port, val);
     return val;
 }
 
-int getPhotoValue()
+int getPhotoValue(int port)
 {
     int val = 0;
-    val = analog(PHOTO_SEN);
-    printf("LITE= %d", val);
+    val = analog(port);
+    //printf("LITE= %d", val);
     return val;
+}
+
+/*
+ * Calculates a "true" value from the
+ * photo sensor that will be added to
+ * the original IR sensor values.
+ */
+int calculateNewIR(int photo)
+{
+    float calc = (float)photo / 225.0;
+    calc = 1.0 - calc;
+    return (int)(calc * 255.0);
 }
 
 void calculateMove()
 {
     int l_ir = 0;
     int r_ir = 0;
-    int photo = 0;
+    int l_photo = 0;
+    int r_photo = 0;
+    int add_true = 0;
     
     l_ir = getIRValue(L_IR_SEN);
     r_ir = getIRValue(R_IR_SEN);
-    photo = getPhotoValue();
+    l_photo = getPhotoValue(L_PHOTO_SEN);
+    r_photo = getPhotoValue(R_PHOTO_SEN);
+    //printf("\nL= %d, R= %d", l_ir, r_ir);
+    //printf("\nL= %d, R= %d",l_photo, r_photo);
+    
+    // brighter light, so near end of maze
+    if(l_photo < 225 && r_photo < 225)
+      {
+        add_true = calculateNewIR(l_photo);
+        l_ir = l_ir + add_true;
+    //}
+    //if(r_photo < 225)
+    //{
+        add_true = calculateNewIR(r_photo);
+        r_ir = r_ir + add_true;
+    }
+    
+    printf
     
     // no wall detected
-    if(l_ir >= 240 && r_ir >= 240)
+    if(l_ir >= 235 && r_ir >= 235)
       {
         forward(0.0);
         return;
@@ -112,27 +143,35 @@ void calculateMove()
     // wall detected (or extra light detected)
     else
       {
-        // brighter light, so near end of maze
-        if(photo < 50)
-          {
-            forward(0.0);
-            return;
-        }
+        
         // low light, so wall found
-        else
-          {
-            if(l_ir > r_ir){
+        if(l_ir > r_ir){
+            if(seconds() <= 1.0){
                 backward(1.0);
-                left(0.75);
+                left(2.2);
                 forward(0.25);
-                return;
             }
             else{
                 backward(1.0);
-                right(0.75);
+                left(1.1);
                 forward(0.25);
-                return;
             }
+            reset_system_time();
+            return;
+        }
+        else{
+            if(seconds() <= 1.0){
+                backward(1.0);
+                right(2.2);
+                forward(0.25);
+            }
+            else{
+                backward(1.0);
+                right(1.1);
+                forward(0.25);
+            }
+            reset_system_time();
+            return;
         }
     }
 }
