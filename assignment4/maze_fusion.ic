@@ -101,7 +101,7 @@ int calculateNewIR(int photo)
 {
     float calc = (float)photo / 225.0;
     calc = 1.0 - calc;
-    return (int)(calc * 255.0);
+    return (int)(calc * 255.0 * 2.0);
 }
 
 void calculateMove()
@@ -124,14 +124,12 @@ void calculateMove()
       {
         add_true = calculateNewIR(l_photo);
         l_ir = l_ir + add_true;
-    //}
-    //if(r_photo < 225)
-    //{
+        //}
+        //if(r_photo < 225)
+        //{
         add_true = calculateNewIR(r_photo);
         r_ir = r_ir + add_true;
     }
-    
-    printf
     
     // no wall detected
     if(l_ir >= 235 && r_ir >= 235)
