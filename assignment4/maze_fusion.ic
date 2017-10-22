@@ -4,7 +4,7 @@
  * CSC463-01
  * Fall 2017
  * Source code for Assignment 4
- * Navigating a maze with two sensors:
+ * Navigating a maze with two sensor types:
  * - IR Sensor for determining how close
  * the robot is to a wall
  * - Photo Sensor for determining if the
@@ -12,13 +12,13 @@
  * (a lamp is placed at the end of the maze)
  */
 
-int LEFT_MOTOR = 1;                                                 // port for left motor
-int RIGHT_MOTOR = 3;                                                // port for right motor
+int LEFT_MOTOR = 1;                                    // port for left motor
+int RIGHT_MOTOR = 3;                                   // port for right motor
 
-int L_IR_SEN = 5;                                                   // left IR sensor port
-int R_IR_SEN = 4;                         // right IR sensor port
-int R_PHOTO_SEN = 3;                                                // right photo sensor port
-int L_PHOTO_SEN = 6;            // left photo sensor port
+int L_IR_SEN = 5;                                      // left IR sensor port
+int R_IR_SEN = 4;                                      // right IR sensor port
+int R_PHOTO_SEN = 3;                                   // right photo sensor port
+int L_PHOTO_SEN = 6;                                   // left photo sensor port
 
 
 /*
@@ -93,6 +93,28 @@ int getPhotoValue(int port)
 }
 
 /*
+ * Based on the value passed in,
+ * method will determine whether
+ * the robot should turn left or
+ * right. It also determines
+ * whether it should turn 90
+ * or 180 degrees.
+ */
+void turn(float direction)
+{
+	backward(1.0)
+	if(direction > 0)
+	{
+		left(direction*1.1);
+	}
+	if(direction < 0)
+	{
+		right(-1*direction*1.1);
+	}
+	forward(0.25);
+	
+
+/*
  * Calculates a "true" value from the
  * photo sensor that will be added to
  * the original IR sensor values.
@@ -104,6 +126,12 @@ int calculateNewIR(int photo)
     return (int)(calc * 255.0 * 2.0);
 }
 
+/*
+ * Determines whether the robot is approaching
+ * a wall or the end of the maze based on 
+ * values from the reflective-opto sensors and
+ * photo sensors.
+ */
 void calculateMove()
 {
     int l_ir = 0;
@@ -116,17 +144,12 @@ void calculateMove()
     r_ir = getIRValue(R_IR_SEN);
     l_photo = getPhotoValue(L_PHOTO_SEN);
     r_photo = getPhotoValue(R_PHOTO_SEN);
-    //printf("\nL= %d, R= %d", l_ir, r_ir);
-    //printf("\nL= %d, R= %d",l_photo, r_photo);
     
     // brighter light, so near end of maze
     if(l_photo < 225 && r_photo < 225)
-      {
+    {
         add_true = calculateNewIR(l_photo);
         l_ir = l_ir + add_true;
-        //}
-        //if(r_photo < 225)
-        //{
         add_true = calculateNewIR(r_photo);
         r_ir = r_ir + add_true;
     }
@@ -142,31 +165,30 @@ void calculateMove()
     else
       {
         
-        // low light, so wall found
-        if(l_ir > r_ir){
-            if(seconds() <= 1.0){
-                backward(1.0);
-                left(2.2);
-                forward(0.25);
+        // left side is closer to wall
+        if(l_ir > r_ir)
+		{
+            if(seconds() <= 1.0)
+			{
+                turn(2.0);
             }
-            else{
-                backward(1.0);
-                left(1.1);
-                forward(0.25);
+            else
+			{
+                turn(1.0);
             }
             reset_system_time();
             return;
         }
-        else{
-            if(seconds() <= 1.0){
-                backward(1.0);
-                right(2.2);
-                forward(0.25);
+		// right side is closer to wall
+        else
+		{
+            if(seconds() <= 1.0)
+			{
+                turn(-2.0);
             }
-            else{
-                backward(1.0);
-                right(1.1);
-                forward(0.25);
+            else
+			{
+                turn(-1.0)
             }
             reset_system_time();
             return;
@@ -181,7 +203,7 @@ void main()
     while(!start_button());
     printf("Start!");
     while(!stop_button())
-      {
+    {
         calculateMove();
     }
     alloff();
