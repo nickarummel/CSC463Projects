@@ -1,0 +1,186 @@
+/*
+ * maze.ic
+ * Nick Rummel, Alex Medellin
+ * CSC463-01
+ * Fall 2017
+ * Source code for Assignment 2
+ * Navigating a maze with touch sesnors
+ * implementing the SARSA algorithm.
+ * (actions and rewards)
+ */
+
+int LEFT_MOTOR = 1;                                               // port for left motor
+int RIGHT_MOTOR = 3;                                              // port for right motor
+
+int FRONT_L_TOUCH = 10;                                           // front left touch sensor port
+int FRONT_R_TOUCH = 11;                                           // front right touch sensor port
+int BACK_TOUCH = 12;											  // back touch sensor port
+
+/*
+ * Function from textbook (turtle.ic)   
+ * to move robot forwards
+ */
+void forward(float time)
+{
+    motor(LEFT_MOTOR, 50);
+    motor(RIGHT_MOTOR, 50);
+    sleep(time);
+}
+
+/*
+ * Function from textbook (turtle.ic)
+ * to move robot backwards
+ */
+void backward(float time)
+{
+    motor(LEFT_MOTOR, -50);
+    motor(RIGHT_MOTOR, -50);
+    sleep(time);
+}
+
+/*
+ * Function from textbook (turtle.ic)
+ * to move robot right
+ */
+void right(float time)
+{
+    motor(LEFT_MOTOR, 85);
+    motor(RIGHT_MOTOR, -85);
+    sleep(time);
+}
+
+/*
+ * Function from textbook (turtle.ic)
+ * to move robot left
+ */
+void left(float time)
+{
+    motor(LEFT_MOTOR, -85);
+    motor(RIGHT_MOTOR, 85);
+    sleep(time);
+}
+
+/*
+ * Function from textbook (turtle.ic)
+ * to stop robot from moving
+ */
+void stop(float time)
+{
+    off(LEFT_MOTOR);
+    off(RIGHT_MOTOR);
+    sleep(time);
+}
+
+/*
+ * Determines if both touch sensors are pressed.
+ * A sleep timer is used briefly in case a 
+ * one sensor is pressed in before the other.
+ * Returns 1 if both sensors are pressed, otherwise 0.
+ */
+int both_touch_press()
+{
+    if(digital(FRONT_L_TOUCH))
+      {
+        sleep(0.1);
+        if(digital(FRONT_R_TOUCH))
+          {
+            return 1;
+        }
+    }
+    if(digital(FRONT_R_TOUCH))
+      {
+        sleep(0.1);
+        if(digital(FRONT_L_TOUCH))
+          {
+            return 1;
+        }
+    }
+    else
+      return 0;
+}
+
+int random(int numOfActions)
+{
+	return ((int) seconds()) % numOfActions;
+}
+
+void determineAction(int iteration)
+{
+	int action;
+	if(iteration < 3)
+	{
+		action = random(7);
+	}
+	else
+	{
+		// find action with largest reward
+	}
+	
+	// determine which action was chosen
+	// Action #0: Turn Left at 45 Degrees
+	if(action == 0)
+	{
+		left(0.6);
+		return;
+	}
+	//Action #1: Turn Left at 90 Degrees
+	if(action == 1)
+	{
+		left(1.2);
+		return;
+	}
+	//Action #2: Turn Right at 45 Degrees
+	if(action == 2)
+	{
+		right(0.6);
+		return;
+	}
+	//Action #3: Turn Right at 90 Degrees
+	if(action == 3)
+	{
+		right(1.2);
+		return;
+	}
+	//Action #4: Turn 180 Degrees
+	if(action == 4)
+	{
+		left(2.4);
+		return;
+	}
+	//Action #5: Move forward
+	if(action == 5)
+	{
+		forward(0.0);
+		return;
+	}
+	//Action #6: Move backwards
+	if(action == 6)
+	{
+		backward(0.0);
+		return;
+	}
+}
+
+void calcReward()
+{
+	
+	
+	
+	
+}
+
+void main()
+{
+	int i = 0;
+	while(!start_button());
+    printf("Start!");
+    while(!stop_button())
+    {
+		determineAction(i);
+		calcReward();
+		i++;
+    }
+    alloff();
+
+
+}
