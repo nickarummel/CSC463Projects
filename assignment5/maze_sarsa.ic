@@ -14,7 +14,9 @@ int RIGHT_MOTOR = 3;                                              // port for ri
 
 int FRONT_L_TOUCH = 10;                                           // front left touch sensor port
 int FRONT_R_TOUCH = 11;                                           // front right touch sensor port
-int BACK_TOUCH = 12;											  // back touch sensor port
+int BACK_TOUCH = 12;             // back touch sensor port
+
+float reward[7];
 
 /*
  * Function from textbook (turtle.ic)   
@@ -22,9 +24,17 @@ int BACK_TOUCH = 12;											  // back touch sensor port
  */
 void forward(float time)
 {
+    float cur_time = seconds();
     motor(LEFT_MOTOR, 50);
     motor(RIGHT_MOTOR, 50);
-    sleep(time);
+    while(seconds() < cur_time + time)
+      {
+        if(digital(FRONT_L_TOUCH) || digital(FRONT_R_TOUCH) || digital(BACK_TOUCH))
+          {
+            alloff();
+            return;
+        }
+    }
 }
 
 /*
@@ -33,9 +43,17 @@ void forward(float time)
  */
 void backward(float time)
 {
+    float cur_time = seconds();
     motor(LEFT_MOTOR, -50);
     motor(RIGHT_MOTOR, -50);
-    sleep(time);
+    while(seconds() < cur_time + time)
+      {
+        if(digital(FRONT_L_TOUCH) || digital(FRONT_R_TOUCH) || digital(BACK_TOUCH))
+          {
+            alloff();
+            return;
+        }
+    }
 }
 
 /*
@@ -44,9 +62,17 @@ void backward(float time)
  */
 void right(float time)
 {
+    float cur_time = seconds();
     motor(LEFT_MOTOR, 85);
     motor(RIGHT_MOTOR, -85);
-    sleep(time);
+    while(seconds() < cur_time + time)
+      {
+        if(digital(FRONT_L_TOUCH) || digital(FRONT_R_TOUCH) || digital(BACK_TOUCH))
+          {
+            alloff();
+            return;
+        }
+    }
 }
 
 /*
@@ -55,9 +81,17 @@ void right(float time)
  */
 void left(float time)
 {
+    float cur_time = seconds();
     motor(LEFT_MOTOR, -85);
     motor(RIGHT_MOTOR, 85);
-    sleep(time);
+    while(seconds() < cur_time + time)
+      {
+        if(digital(FRONT_L_TOUCH) || digital(FRONT_R_TOUCH) || digital(BACK_TOUCH))
+          {
+            alloff();
+            return;
+        }
+    }
 }
 
 /*
@@ -99,88 +133,152 @@ int both_touch_press()
       return 0;
 }
 
-int random(int numOfActions)
+int randomNumber(int numOfActions)
 {
-	return ((int) seconds()) % numOfActions;
+    return ((int) seconds()) % numOfActions;
 }
 
-void determineAction(int iteration)
+int determineAction(int iteration)
 {
-	int action;
-	if(iteration < 3)
-	{
-		action = random(7);
-	}
-	else
-	{
-		// find action with largest reward
-	}
-	
-	// determine which action was chosen
-	// Action #0: Turn Left at 45 Degrees
-	if(action == 0)
-	{
-		left(0.6);
-		return;
-	}
-	//Action #1: Turn Left at 90 Degrees
-	if(action == 1)
-	{
-		left(1.2);
-		return;
-	}
-	//Action #2: Turn Right at 45 Degrees
-	if(action == 2)
-	{
-		right(0.6);
-		return;
-	}
-	//Action #3: Turn Right at 90 Degrees
-	if(action == 3)
-	{
-		right(1.2);
-		return;
-	}
-	//Action #4: Turn 180 Degrees
-	if(action == 4)
-	{
-		left(2.4);
-		return;
-	}
-	//Action #5: Move forward
-	if(action == 5)
-	{
-		forward(0.0);
-		return;
-	}
-	//Action #6: Move backwards
-	if(action == 6)
-	{
-		backward(0.0);
-		return;
-	}
+    int action;
+    if(iteration < 3)
+      {
+        action = randomNumber(7);
+    }
+    else
+      {
+        action = findLargestReward();
+    }
+    
+    // determine which action was chosen
+    // Action #0: Turn Left at 45 Degrees
+    if(action == 0)
+      {
+        left(0.6);
+        return action;
+    }
+    //Action #1: Turn Left at 90 Degrees
+    if(action == 1)
+      {
+        left(1.2);
+        return action;
+    }
+    //Action #2: Turn Right at 45 Degrees
+    if(action == 2)
+      {
+        right(0.6);
+        return action;
+    }
+    //Action #3: Turn Right at 90 Degrees
+    if(action == 3)
+      {
+        right(1.2);
+        return action;
+    }
+    //Action #4: Turn 180 Degrees
+    if(action == 4)
+      {
+        left(2.4);
+        return action;
+    }
+    //Action #5: Move forward
+    if(action == 5)
+      {
+        forward(0.0);
+        return action;
+    }
+    //Action #6: Move backwards
+    if(action == 6)
+      {
+        backward(0.0);
+        return action;
+    }
+    return action;
 }
 
-void calcReward()
+void calcReward(int action)
 {
-	
-	
-	
-	
+    float sum = 0.0;
+    if(both_touch_press())
+      sum += -0.5;
+    else
+      sum += 0.5;
+    
+    if(digital(FRONT_L_TOUCH))
+      sum += -0.3;
+    else
+      sum += 0.3;
+    
+    if(digital(FRONT_R_TOUCH))
+      sum += -0.3;
+    else
+      sum += 0.3;
+    
+    if(digital(BACK_TOUCH))
+      sum += -0.2;
+    else
+      sum += 0.2;
+    
+    forward(2.0);
+    
+    if(both_touch_press())
+      sum += -0.3;
+    else
+      sum += 0.3;
+    
+    if(digital(FRONT_L_TOUCH))
+      sum += -0.2;
+    else
+      sum += 0.2;
+    
+    if(digital(FRONT_R_TOUCH))
+      sum += -0.2;
+    else
+      sum += 0.2;
+    if(digital(BACK_TOUCH))
+      sum += -0.1;
+    else
+      sum += 0.1;
+    
+    reward[action] += sum;
+    
+    
+    
+}
+
+int findLargestReward()
+{
+    int i;
+    int large_action = 0;
+    for(i = 0; i < 7; i++)
+      {
+        if(i == 0)
+          large_action = i;
+        else
+          {
+            if(reward[i] > reward[large_action])
+              large_action = i;
+        }
+    }
+    return large_action;
 }
 
 void main()
 {
-	int i = 0;
-	while(!start_button());
+    int i;
+    int action = 0;
+    for(i = 0; i < 7;i++)
+      reward[i] = 0.0;
+    i = 0;
+    while(!start_button());
     printf("Start!");
     while(!stop_button())
-    {
-		determineAction(i);
-		calcReward();
-		i++;
+      {
+        action = determineAction(i);
+        calcReward(action);
+        i++;
     }
     alloff();
-
-
+    
+    
 }
