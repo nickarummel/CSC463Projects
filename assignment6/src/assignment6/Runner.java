@@ -1,4 +1,5 @@
 package assignment6;
+import java.util.Map;
 import java.util.TreeMap;
 /**
  * Main class to generate the tree and code for
@@ -12,15 +13,13 @@ import java.util.TreeMap;
 
 public class Runner
 {
-	public TreeMap<String,String> tree = new TreeMap<>();
+	public static TreeMap<String,String> tree = new TreeMap<>();
+	static char i = '`';
+	private final static int THRESHOLD = 235;
 	public static void main(String[] args)
 	{
-		int sensor = 0;
-		int component = 0;
-
-		
-		
-
+		chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
+		printTree();
 	}
 	
 	/**
@@ -52,72 +51,118 @@ public class Runner
 	 * @param sensor The sensor number to be used
 	 * @param component The component to be used
 	 * @param threshold The threshold to be used
-	 * @return The tree as a String
 	 */
-	public String chooseComponent(int sensor, int component, int threshold)
+	public static void chooseComponent(int sensor, int component, int threshold)
 	{
+		i++;
+		String s = "";
+		
 		// 1 - Are We Close To Wall
 		if(component == 1)
 		{
-			
-			return "";
+			s = "Close to Wall: Sensor " + sensor + ", threshold " + threshold;
+			tree.put("" + i,s);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			return;
 		}
 		// 2 - While Too Far From Wall
 		else if(component == 2)
 		{
-			return "";
+			s = "Far from Wall: Sensor " + sensor + ", threshold " + threshold;
+			tree.put("" + i,s);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			return;
 		}
 		// 3 - Do 2 Far From Wall
 		else if(component == 3)
 		{
-			return "";
+			s = "Do Two Far Far: Sensor " + sensor + ", threshold " + threshold;
+			tree.put("" + i,s);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			return;
 		}
 		// 4 - Do 2 Close To Wall
 		else if(component == 4)
 		{
-			return "";
+			s = "Do Two Close Close: Sensor " + sensor + ", threshold " + threshold;
+			tree.put("" + i,s);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			return;
 		}
 		// 5 - Do 2 Far Close
 		else if(component == 5)
 		{
-			return "";
+			s = "Do Two Far Close: Sensor " + sensor + ", threshold " + threshold;
+			tree.put("" + i,s);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			return;
 		}
 		// 6 - Do 2 Close Far
 		else if(component == 6)
 		{
-			return "";
+			s = "Do Two Close Far: Sensor " + sensor + ", threshold " + threshold;
+			tree.put("" + i,s);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
+			return;
 		}
 		// 7 - Go Forward
 		else if(component == 7)
 		{
-			return "";
+			s = "Go Forward";
+			tree.put("" + i,s);
+			return;
 		}
 		// 8 - Turn Right
 		else if(component == 8)
 		{
-			return "";
+			s = "Turn Right";
+			tree.put("" + i,s);
+			return;
 		}
 		// 9 - Turn Left
 		else if(component == 9)
 		{
-			return "";
+			s = "Turn Left";
+			tree.put("" + i,s);
+			return;
 		}
 		// 10 - Backup
 		else if(component == 10)
 		{
-			return "";
+			s = "Backup";
+			tree.put("" + i,s);
+			return;
 		}
 		// 11 - Turn Parallel to Position
 		else if(component == 11)
 		{
-			return "";
+			s = "Turn Parallel To Wall";
+			tree.put("" + i,s);
+			return;
 		}
-		// 12 - Turn Parallel to Position
-		else
+		// 12 - Turn Square with Wall
+		else if(component == 12)
 		{
-			return "";
+			s = "Turn Square with Wall";
+			tree.put("" + i,s);
+			return;
 		}
 		
+	}
+	
+	/**
+	 * Prints out the tree
+	 */
+	public static void printTree()
+	{
+		for(Map.Entry<String, String> entry : tree.entrySet())
+		{
+			System.out.println(entry.getKey() + ". " + entry.getValue() + "\n" );
+		}
 	}
 
 }
