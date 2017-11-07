@@ -1,6 +1,8 @@
 package assignment6;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Enumeration;
+
+import javax.swing.tree.*;
 /**
  * Main class to generate the tree and code for
  * the genetic algorithm in Interactive C.
@@ -13,13 +15,16 @@ import java.util.TreeMap;
 
 public class Runner
 {
-	public static TreeMap<String,String> tree = new TreeMap<>();
+	public static ArrayList<DefaultMutableTreeNode> tree = new ArrayList<DefaultMutableTreeNode>();
 	static char i = '`';
 	private final static int THRESHOLD = 235;
 	public static void main(String[] args)
 	{
-		chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
-		printTree();
+		DefaultMutableTreeNode root = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
+		
+		Enumeration en = root.preorderEnumeration();
+		while(en.hasMoreElements())
+			System.out.println(en.nextElement() + "\n");
 	}
 	
 	/**
@@ -52,117 +57,108 @@ public class Runner
 	 * @param component The component to be used
 	 * @param threshold The threshold to be used
 	 */
-	public static void chooseComponent(int sensor, int component, int threshold)
+	public static DefaultMutableTreeNode chooseComponent(int sensor, int component, int threshold)
 	{
 		i++;
 		String s = "";
+		DefaultMutableTreeNode node = new DefaultMutableTreeNode();
 		
 		// 1 - Are We Close To Wall
 		if(component == 1)
 		{
 			s = "Close to Wall: Sensor " + sensor + ", threshold " + threshold;
-			tree.put("" + i,s);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
 		// 2 - While Too Far From Wall
 		else if(component == 2)
 		{
 			s = "Far from Wall: Sensor " + sensor + ", threshold " + threshold;
-			tree.put("" + i,s);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
 		// 3 - Do 2 Far From Wall
 		else if(component == 3)
 		{
 			s = "Do Two Far Far: Sensor " + sensor + ", threshold " + threshold;
-			tree.put("" + i,s);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
 		// 4 - Do 2 Close To Wall
 		else if(component == 4)
 		{
 			s = "Do Two Close Close: Sensor " + sensor + ", threshold " + threshold;
-			tree.put("" + i,s);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
 		// 5 - Do 2 Far Close
 		else if(component == 5)
 		{
 			s = "Do Two Far Close: Sensor " + sensor + ", threshold " + threshold;
-			tree.put("" + i,s);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
 		// 6 - Do 2 Close Far
 		else if(component == 6)
 		{
 			s = "Do Two Close Far: Sensor " + sensor + ", threshold " + threshold;
-			tree.put("" + i,s);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
+			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
 		// 7 - Go Forward
 		else if(component == 7)
 		{
 			s = "Go Forward";
-			tree.put("" + i,s);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
 		}
 		// 8 - Turn Right
 		else if(component == 8)
 		{
 			s = "Turn Right";
-			tree.put("" + i,s);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
 		}
 		// 9 - Turn Left
 		else if(component == 9)
 		{
 			s = "Turn Left";
-			tree.put("" + i,s);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
 		}
 		// 10 - Backup
 		else if(component == 10)
 		{
 			s = "Backup";
-			tree.put("" + i,s);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
 		}
 		// 11 - Turn Parallel to Position
 		else if(component == 11)
 		{
 			s = "Turn Parallel To Wall";
-			tree.put("" + i,s);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
 		}
 		// 12 - Turn Square with Wall
 		else if(component == 12)
 		{
 			s = "Turn Square with Wall";
-			tree.put("" + i,s);
-			return;
+			node.setUserObject(s);
+			tree.add(node);
 		}
+		return node;
 		
-	}
-	
-	/**
-	 * Prints out the tree
-	 */
-	public static void printTree()
-	{
-		for(Map.Entry<String, String> entry : tree.entrySet())
-		{
-			System.out.println(entry.getKey() + ". " + entry.getValue() + "\n" );
-		}
 	}
 
 }
