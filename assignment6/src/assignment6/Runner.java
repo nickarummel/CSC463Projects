@@ -11,12 +11,8 @@ import javax.swing.tree.*;
  * @author Alex Medellin
  *
  */
-
-
 public class Runner
 {
-	public static ArrayList<DefaultMutableTreeNode> tree = new ArrayList<DefaultMutableTreeNode>();
-	static char i = '`';
 	private final static int THRESHOLD = 235;
 	public static void main(String[] args)
 	{
@@ -24,7 +20,17 @@ public class Runner
 		
 		Enumeration en = root.preorderEnumeration();
 		while(en.hasMoreElements())
-			System.out.println(en.nextElement() + "\n");
+		{
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) en.nextElement();
+			String val = String.valueOf(node.getUserObject());
+			String s = "";
+			while (node.getParent() != null)
+			{
+				s += "     ";
+				node = (DefaultMutableTreeNode) node.getParent();
+			}
+			System.out.println(s + val);
+		}
 	}
 	
 	/**
@@ -59,7 +65,6 @@ public class Runner
 	 */
 	public static DefaultMutableTreeNode chooseComponent(int sensor, int component, int threshold)
 	{
-		i++;
 		String s = "";
 		DefaultMutableTreeNode node = new DefaultMutableTreeNode();
 		
@@ -68,7 +73,6 @@ public class Runner
 		{
 			s = "Close to Wall: Sensor " + sensor + ", threshold " + threshold;
 			node.setUserObject(s);
-			tree.add(node);
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
 		// 2 - While Too Far From Wall
@@ -76,7 +80,6 @@ public class Runner
 		{
 			s = "Far from Wall: Sensor " + sensor + ", threshold " + threshold;
 			node.setUserObject(s);
-			tree.add(node);
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
 		// 3 - Do 2 Far From Wall
@@ -84,7 +87,6 @@ public class Runner
 		{
 			s = "Do Two Far Far: Sensor " + sensor + ", threshold " + threshold;
 			node.setUserObject(s);
-			tree.add(node);
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
@@ -93,7 +95,6 @@ public class Runner
 		{
 			s = "Do Two Close Close: Sensor " + sensor + ", threshold " + threshold;
 			node.setUserObject(s);
-			tree.add(node);
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
@@ -102,7 +103,6 @@ public class Runner
 		{
 			s = "Do Two Far Close: Sensor " + sensor + ", threshold " + threshold;
 			node.setUserObject(s);
-			tree.add(node);
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
@@ -111,7 +111,6 @@ public class Runner
 		{
 			s = "Do Two Close Far: Sensor " + sensor + ", threshold " + threshold;
 			node.setUserObject(s);
-			tree.add(node);
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 			node.add(chooseComponent(generateRandomSensor(), generateRandomComponent(), THRESHOLD));
 		}
@@ -120,42 +119,36 @@ public class Runner
 		{
 			s = "Go Forward";
 			node.setUserObject(s);
-			tree.add(node);
 		}
 		// 8 - Turn Right
 		else if(component == 8)
 		{
 			s = "Turn Right";
 			node.setUserObject(s);
-			tree.add(node);
 		}
 		// 9 - Turn Left
 		else if(component == 9)
 		{
 			s = "Turn Left";
 			node.setUserObject(s);
-			tree.add(node);
 		}
 		// 10 - Backup
 		else if(component == 10)
 		{
 			s = "Backup";
 			node.setUserObject(s);
-			tree.add(node);
 		}
 		// 11 - Turn Parallel to Position
 		else if(component == 11)
 		{
 			s = "Turn Parallel To Wall";
 			node.setUserObject(s);
-			tree.add(node);
 		}
 		// 12 - Turn Square with Wall
 		else if(component == 12)
 		{
 			s = "Turn Square with Wall";
 			node.setUserObject(s);
-			tree.add(node);
 		}
 		return node;
 		
