@@ -1,0 +1,7 @@
+Do Two Close Far: Sensor 2, threshold 235
+     Do Two Far Far: Sensor 1, threshold 235
+          Turn Parallel To Wall
+          Far from Wall: Sensor 3, threshold 235
+               Far from Wall: Sensor 1, threshold 235
+                    Backup
+     Go Forward
