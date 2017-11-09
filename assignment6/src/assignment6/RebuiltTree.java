@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -14,9 +15,9 @@ public class RebuiltTree
 {
 	final private String INDENT = "     ";
 	final private int MAX_LEVEL = 10;
-	protected DefaultMutableTreeNode tree;
-	protected ArrayList<String> text;
-	protected int[] levels;
+	private DefaultMutableTreeNode tree;
+	private ArrayList<String> text;
+	private int[] levels;
 	public RebuiltTree(String path)
 	{
 		text = new ArrayList<String>();
@@ -56,29 +57,27 @@ public class RebuiltTree
 	
 	private void generateTree()
 	{
+		ArrayList<Integer> sameLevels = null;
 		calculateLevelCounts();
-		int size = text.size();
+		//int size = text.size();
 		tree.setUserObject(text.get(0));
-		int prev_level = 0;
-		for(int i = 1; i < size; i++)
+		DefaultMutableTreeNode temp = tree;
+		for(int i = 1; i <= MAX_LEVEL; i++)
 		{
-			String val = text.get(i);
-			if(levels[i] > prev_level)
-			{
-				tree.add(new DefaultMutableTreeNode(val));
-			}
-			else if(levels[i] == prev_level)
-			{
-				
-			}
+			sameLevels = checkForSameLevel(i);
+			if(sameLevels.size() == 0)
+				break;
 			else
 			{
-				
+				for(int j = 0; j < sameLevels.size(); j++)
+				{
+					temp.add(new DefaultMutableTreeNode(text.get(sameLevels.get(j)).trim()));
+				}
 			}
-			
-			
-			prev_level = levels[i];
-			
+			if(checkIfDeadEndComponent(temp))
+				temp = temp.getNextNode();
+			temp = temp.getNextNode();
+				
 			
 		}
 	}
@@ -100,6 +99,7 @@ public class RebuiltTree
 					if(val.startsWith(createIndent(j)))
 					{
 						levels[i] = j;
+						break;
 					}
 				}
 			}
@@ -110,7 +110,38 @@ public class RebuiltTree
 	{
 		String s = "";
 		for(int i = 1; i <= count; i++)
-			s.replace("\0", INDENT);
+			s += INDENT;
 		return s;
+	}
+	
+	private ArrayList<Integer> checkForSameLevel(int level)
+	{
+		ArrayList<Integer> sameLevel = new ArrayList<Integer>();
+		for(int i = 0; i < levels.length; i++)
+		{
+			if(levels[i] == level)
+			{
+				sameLevel.add(i);
+			}
+		}
+		return sameLevel;
+	}
+	
+	public DefaultMutableTreeNode getTree()
+	{
+		return tree;
+	}
+	
+	private boolean checkIfDeadEndComponent(DefaultMutableTreeNode node)
+	{
+		if(((String)node.getNextNode().getUserObject()).contains("Forward"))
+			return true;
+		if(((String)node.getNextNode().getUserObject()).contains("Backup"))
+			return true;
+		if(((String)node.getNextNode().getUserObject()).contains("Turn"))
+			return true;
+		else
+			return false;
+		
 	}
 }

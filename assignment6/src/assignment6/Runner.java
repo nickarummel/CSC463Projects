@@ -16,8 +16,18 @@ public class Runner
 	private final static int THRESHOLD = 235;
 	public static void main(String[] args)
 	{
-		DefaultMutableTreeNode root = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
+		//DefaultMutableTreeNode root = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
 		
+		//printTree(root);
+		
+		//System.out.println("");
+		
+		RebuiltTree rt = new RebuiltTree("C:\\Users\\Nick\\git\\CSC463_Group2\\assignment6\\tree_test.txt");
+		printTree(rt.getTree());
+	}
+
+	public static void printTree(DefaultMutableTreeNode root)
+	{
 		Enumeration en = root.preorderEnumeration();
 		while(en.hasMoreElements())
 		{
