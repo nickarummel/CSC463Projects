@@ -1,8 +1,10 @@
 package assignment6;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
+import java.util.Scanner;
 
 import javax.swing.tree.*;
 /**
@@ -22,23 +24,108 @@ public class Runner
 	 */
 	public static void main(String[] args)
 	{
-		DefaultMutableTreeNode root = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
+		while(true)
+		{
+			Scanner kbreader = new Scanner(System.in);
+			System.out.print("Options:"
+					+ "\n1 - Generate new tree"
+					+ "\n2 - Rebuild tree and replace random node"
+					+ "\n3 - Rebuild two trees and replace tree 1's node with tree 2's node"
+					+ "\n4 - Terminate program"
+					+ "\nWhat would you like to do? ");
+			int choice = kbreader.nextInt();
+			if(choice == 1)
+			{
+				DefaultMutableTreeNode root = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
+				System.out.println("Tree");
+				printTree(root);
+				
+				exportTree(root);
+				File f = new File("output_tree.txt");
+
+				System.out.println("Tree saved at: " + f.getAbsolutePath() + "\n");
+			}
+			else if(choice == 2)
+			{
+				kbreader.nextLine();
+				System.out.print("\nEnter path of tree file:  ");
+				String path = kbreader.nextLine();
+				RebuiltTree rt = new RebuiltTree(path);
+				DefaultMutableTreeNode newTree = rt.getTree();				
+				newTree = changeOneNode(newTree, selectRandomNode(newTree));
+				
+				System.out.println("Tree");
+				printTree(newTree);
+				
+				exportTree(newTree);
+				File f = new File("output_tree.txt");
+
+				System.out.println("Tree saved at: " + f.getAbsolutePath() + "\n");
+			}
+			else if(choice == 3)
+			{
+				kbreader.nextLine();
+				System.out.print("\nEnter path of the first tree's file:  ");
+				String path = kbreader.nextLine();
+				RebuiltTree rt = new RebuiltTree(path);
+				DefaultMutableTreeNode tree1 = rt.getTree();
+				
+				System.out.print("\nEnter path of the second tree's file:  ");
+				path = kbreader.nextLine().trim();
+				rt = new RebuiltTree(path);
+				DefaultMutableTreeNode tree2 = rt.getTree();
+				
+				
+				System.out.println("\nMerged Tree");
+				DefaultMutableTreeNode root = makeNewTreeFromTwoTrees(tree1, tree2);
+				printTree(tree1);
+				
+				exportTree(root);
+				File f = new File("output_tree.txt");
+
+				System.out.println("Tree saved at: " + f.getAbsolutePath() + "\n");
+				
+			}
+			else
+			{
+				break;
+			}
 		
+		}
+	}
+
+	/**
+	 * Code to generate all parts of assignment
+	 * as a test
+	 */
+	public static void testProject()
+	{
+		DefaultMutableTreeNode root = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
+		System.out.println("Part 1 - First Tree");
 		printTree(root);
 		
 		exportTree(root);
 		
-		System.out.println("");
+		System.out.println("\nRebuilt Tree");
 		
 		RebuiltTree rt = new RebuiltTree("output_tree.txt");
 		DefaultMutableTreeNode newTree = rt.getTree();
 		printTree(newTree);
 		
-		System.out.println("");
+		System.out.println("\nPart 2 - Swap 1 Node with Random Components");
 		
 		newTree = changeOneNode(newTree, selectRandomNode(newTree));
 		
 		printTree(newTree);
+		
+		System.out.println("\nPart 3 - Replace Random Node from Tree 1 with Random Node from Tree 2");
+		System.out.println("Tree #2");
+		DefaultMutableTreeNode tree2 = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
+		printTree(tree2);
+		
+		System.out.println("\nMerged Tree");
+		root = makeNewTreeFromTwoTrees(root, tree2);
+		printTree(root);
 	}
 
 	/**
@@ -279,6 +366,52 @@ public class Runner
 			temp = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
 		}
 		return (DefaultMutableTreeNode) temp.getRoot();
+	}
+	
+	/**
+	 * Creates a new tree by randomly selecting a node in the first
+	 * tree and replacing it with a node from a second tree.
+	 * @param tree1 the tree to receive a new node/sub-tree
+	 * @param tree2 the tree supplying the node/sub-tree
+	 * @return the merged tree's root
+	 */
+	public static DefaultMutableTreeNode makeNewTreeFromTwoTrees(DefaultMutableTreeNode tree1, DefaultMutableTreeNode tree2)
+	{
+		int tree1node = selectRandomNode(tree1);
+		int tree2node = selectRandomNode(tree2);
+		
+		for(int i = 0; i < tree1node; i++)
+			tree1 = tree1.getNextNode();
+		for(int i = 0; i < tree2node; i++)
+			tree2 = tree2.getNextNode();
+		
+		tree1.removeAllChildren();
+		if(tree1.getSiblingCount() > 0 && !(tree1.isRoot()))
+		{
+			DefaultMutableTreeNode test = (DefaultMutableTreeNode) tree1.getParent().getChildAt(0);
+			if(test.equals(tree1))
+			{
+				tree1 = (DefaultMutableTreeNode) tree1.getParent();
+				tree1.remove(0);
+			}
+			else
+			{
+				tree1 = (DefaultMutableTreeNode) tree1.getParent();
+				tree1.remove(1);
+			}
+			tree1.add(tree2);
+		}
+		else if(tree1.getSiblingCount() == 0 && !(tree1.isRoot()))
+		{
+			tree1 = (DefaultMutableTreeNode) tree1.getParent();
+			tree1.removeAllChildren();
+			tree1.add(tree2);
+		}
+		else 
+		{
+			tree1 = tree2;
+		}
+		return (DefaultMutableTreeNode) tree1.getRoot();
 	}
 
 }
