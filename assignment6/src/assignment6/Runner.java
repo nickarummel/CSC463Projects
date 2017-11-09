@@ -1,4 +1,7 @@
 package assignment6;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -16,19 +19,22 @@ public class Runner
 	private final static int THRESHOLD = 235;
 	public static void main(String[] args)
 	{
-		//DefaultMutableTreeNode root = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
+		DefaultMutableTreeNode root = chooseComponent(generateRandomSensor(),generateRandomComponent(),THRESHOLD);
 		
-		//printTree(root);
+		printTree(root);
 		
-		//System.out.println("");
+		exportTree(root);
 		
-		RebuiltTree rt = new RebuiltTree("C:\\Users\\Nick\\git\\CSC463_Group2\\assignment6\\tree_test.txt");
+		System.out.println("");
+		
+		RebuiltTree rt = new RebuiltTree("output_tree.txt");
 		printTree(rt.getTree());
 	}
 
-	public static void printTree(DefaultMutableTreeNode root)
+	public static String toString(DefaultMutableTreeNode root)
 	{
 		Enumeration en = root.preorderEnumeration();
+		String buf = "";
 		while(en.hasMoreElements())
 		{
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) en.nextElement();
@@ -39,7 +45,32 @@ public class Runner
 				s += "     ";
 				node = (DefaultMutableTreeNode) node.getParent();
 			}
-			System.out.println(s + val);
+			buf = buf + s + val + "\n";
+		}
+		return buf;
+	}
+	
+	public static void printTree(DefaultMutableTreeNode root)
+	{
+			System.out.print(toString(root));
+	}
+	
+	public static void exportTree(DefaultMutableTreeNode root)
+	{
+		String buf = toString(root);
+		try
+		{
+			PrintWriter writer = new PrintWriter("output_tree.txt", "ISO-8859-1");
+			writer.print(buf);
+			writer.close();
+		} catch (FileNotFoundException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	

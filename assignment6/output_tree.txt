@@ -1,0 +1,11 @@
+Do Two Close Far: Sensor 3, threshold 235
+     Do Two Far Far: Sensor 1, threshold 235
+          Turn Square with Wall
+          Do Two Far Close: Sensor 3, threshold 235
+               Do Two Far Close: Sensor 4, threshold 235
+                    Turn Right
+                    Do Two Far Far: Sensor 1, threshold 235
+                         Go Forward
+                         Go Forward
+               Turn Left
+     Go Forward

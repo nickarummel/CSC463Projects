@@ -76,6 +76,7 @@ public class RebuiltTree
 			}
 			if(checkIfDeadEndComponent(temp))
 				temp = temp.getNextNode();
+			
 			temp = temp.getNextNode();
 				
 			
