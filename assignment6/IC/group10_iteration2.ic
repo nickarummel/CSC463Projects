@@ -1,0 +1,65 @@
+//TODO Set the define values
+#define THRESHOLD 235
+#define LEFT_SEN 5
+#define RIGHT_SEN 4
+#define FRONT_LEFT 6
+#define FRONT_RIGHT 3
+
+void moveMotors(int rightSpeed, int leftSpeed)
+{
+     motor(3, rightSpeed);
+     motor(1, leftSpeed);
+}
+
+void turnLeftNine(void)
+{
+    //TODO: Design the code to make the bot turn 90 degrees
+    moveMotors(85,-85);
+    sleep(1.2);
+}
+
+void squareUp(void)
+{
+     int range = 5;
+     int value;
+     int dir;
+     if(analog(FRONT_LEFT) > analog(FRONT_RIGHT))
+     {
+          dir = 1; //Turn to the right
+     }
+     else
+     {
+          dir = 0; //Turn to the left
+     }
+
+     switch(dir)
+     {
+          case 0:
+               value = analog(FRONT_LEFT);
+               moveMotors(50, -50);
+               while(analog(FRONT_RIGHT) >= (value + range));
+               break;
+          case 1:
+               value = analog(FRONT_RIGHT);
+               moveMotors(-50, 50);
+               while(analog(FRONT_LEFT) >= (value + range));
+               break;
+     }
+}
+
+int main(void)
+{
+   printf("\nStart!");
+   while(analog(FRONT_RIGHT) > THRESHOLD)
+   {
+   squareUp();
+   }
+   while(analog(FRONT_RIGHT) > THRESHOLD)
+   {
+   moveMotors(-50, 50);
+    }
+    printf("\nE
+}
+
+
+
