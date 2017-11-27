@@ -1,0 +1,178 @@
+/*
+ * final_project.ic
+ * Nick Rummel, Alex Medellin
+ * CSC463-01
+ * Fall 2017
+ * Source code for final project
+ * Robot must navigate arena and collect
+ * blocks from various points.
+ */
+
+int LEFT_MOTOR = 1;                                         // port for left motor
+int RIGHT_MOTOR = 3;                                        // port for right motor
+int FRONT_IR = 3;                                           // analog port for the IR sensor on the front
+int RIGHT_IR = 4;											// analog port for the IR sensor on the right side
+int LEFT_IR = 5;											// analog port for the IR sensor on the left side
+int RIGHT_LITE = 6;											// analog port for the photo sensor on the right side
+int LEFT_LITE = 7;											// analog port for the photo sensor on the left side
+int IR_VALUE = 0;                                        	// value to determine if on tape
+float last = 0.0;											// float used to determine if last move was left (-) or right (+)
+int blocks[];
+
+
+
+/*
+ * Method from textbook (turtle.ic)   
+ * to move robot forwards
+ */
+void forward()
+{
+    motor(LEFT_MOTOR, 30);
+    motor(RIGHT_MOTOR, 30);
+}
+
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot backwards
+ */
+void backward()
+{
+    motor(LEFT_MOTOR, -30);
+    motor(RIGHT_MOTOR, -30);
+}
+
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot right
+ */
+void right(float time)
+{
+    motor(LEFT_MOTOR, 85);
+    motor(RIGHT_MOTOR, -75);
+    sleep(time);
+}
+
+/*
+ * Method from textbook (turtle.ic)
+ * to move robot left
+ */
+void left(float time)
+{
+    motor(LEFT_MOTOR, -75);
+    motor(RIGHT_MOTOR, 85);
+    sleep(time);
+}
+
+/*
+ * Method from textbook (turtle.ic)
+ * to stop robot from moving
+ */
+void stop(float time)
+{
+    off(LEFT_MOTOR);
+    off(RIGHT_MOTOR);
+    sleep(time);
+}
+
+/*
+ * Method to retrieve the light value
+ * from the robot's photo sensor
+ * and print the value to the LCD screen.
+ */
+int getSensorValue(int sensor_num)
+{
+    int value;
+    value = analog(// float used to determine if last move was left (-) or right (+));
+    
+    printf("s%d= %d", sensor_num, value);
+    return value;
+}
+
+/*
+ * The photo sensor will take in several
+ * readings and compute the average of those
+ * values to determine a baseline for our
+ * light value range.
+ */
+void setLightValAvg()
+{
+    int i = 0;
+    int sum = 0;
+    while(i < 30){
+        sum += analog(FRONT_IR);
+        sleep(0.1);
+        i++;
+    }
+    IR_VALUE = sum/30;
+}
+
+void follow_line(int sensor)
+{
+	if(sensor < 0){
+            printf("Error\n");
+        }
+        else{
+            if(sensor >= IR_VALUE - 12){                 // if the value is greater than/equal to (average - 12)
+                printf("black\n");
+                forward();                                  // go forward
+                
+            }
+            else{
+                while(!(sensor >= IR_VALUE - 12)){       // if the average is not greater than/equal to (average - 12)
+                    printf("white\n");
+                    stop(0.0);
+                    if(last > 0.0){                         // go left (-) if went right last time
+                        last = last * -1.0;
+                        left((last + 0.2) * -1.0);
+                        stop(0.2);
+                        sensor = getSensorValue();          // Retrieve sensor's new value and loop
+                    }
+                    else{
+                        if(last < 0.0){                     // go right (+) if went left last time
+                            last = last * -1.0;
+                            right(last + 0.1);
+                            stop(0.0);
+                            sensor = getSensorValue();      // Retrieve sensor's new value and loop
+                        } 
+                        else{                               // default (0.0) - go left
+                            last = -0.2;
+                            left(last * -1.0);
+                            stop(0.0);
+                            sensor = getSensorValue();      // Retrieve sensor's new value and loop
+                        }
+                    }
+                }
+                last = 0.0;                                 // Reset value
+            }
+        }
+}
+
+
+
+void main()
+{
+    int front_ir = 0;
+	int l_side_ir = 0;
+	int r_side_ir = 0;
+	int l_side_lite = 0;
+	int r_side_lite = 0;
+    printf("Start\n");
+    setLightValAvg();                                       // calculates the baseline light average
+    front_ir = getSensorValue(FRONT_IR);                    // stores value from photo sensor
+    printf("AVG= %d", IR_VALUE);
+    sleep(1.0);
+	
+    while(!stop_button()){                                  // runs while we don't press the stop button
+        front_ir = getSensorValue();
+		l_side_ir = getSensorValue(LEFT_IR);
+		r_side_ir = getSensorValue(RIGHT_IR);
+		if((l_side_ir >= IR_VALUE - 12)&&(r_side_ir >= IR_VALUE - 12))
+			follow_line(front_ir);
+		else
+		{
+			
+		}
+        
+    }
+	alloff();
+} 
