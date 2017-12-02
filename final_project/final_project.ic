@@ -10,6 +10,7 @@
 
 int LEFT_MOTOR = 1;                                         // port for left motor
 int RIGHT_MOTOR = 3;                                        // port for right motor
+int CLAW_MOTOR = 2;											// port for claw motor
 int FRONT_IR = 3;                                           // analog port for the IR sensor on the front
 int RIGHT_IR = 4;											// analog port for the IR sensor on the right side
 int LEFT_IR = 5;											// analog port for the IR sensor on the left side
@@ -208,7 +209,6 @@ int retrieveBlock(int loc)
 	
 	alloff();
 	pickupBlock();
-	alloff();
 	
 	backward(1.0)
 	left(2.3);
@@ -226,7 +226,16 @@ int retrieveBlock(int loc)
 
 void pickupBlock()
 {
-	// to be completed later
+	motor(CLAW_MOTOR, 20);
+	sleep(0.25);
+	alloff();
+}
+
+void dropoffBlock()
+{
+	motor(CLAW_MOTOR, -15);
+	sleep(0.5);
+	alloff();
 }
 
 void findIntersection()
@@ -326,6 +335,8 @@ void main()
 			{
 				followLine(getSensorValue(FRONT_IR));
 			}
+			alloff();
+			
 			dropBlock();
 			
 			backward(1.0)
