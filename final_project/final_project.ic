@@ -15,6 +15,7 @@ int RIGHT_IR = 4;											// analog port for the IR sensor on the right side
 int LEFT_IR = 5;											// analog port for the IR sensor on the left side
 int RIGHT_LITE = 6;											// analog port for the photo sensor on the right side
 int LEFT_LITE = 7;											// analog port for the photo sensor on the left side
+int FRONT_LITE = 8;
 int IR_VALUE = 0;                                        	// value to determine if on tape
 int L_LITE_VALUE = 0;										// average value of light on left side
 int R_LITE_VALUE = 0;										// average value of light on right side
@@ -187,7 +188,55 @@ int isIntersection()
 	}
 }
 
+int retrieveBlock(int loc)
+{
+	int sen_val = 0;
+	if(loc < 0)
+	{
+		left(1.2);
+	}
+	else
+	{
+		right(1.2);
+	}
+	sen_val = getSensorValue(FRONT_LITE);
+	while(sen_val > l_side_lite - 12)
+	{
+		followLine(getSensorValue(FRONT_IR);
+		sen_val = getSensorValue(FRONT_LITE);
+	}
+	
+	alloff();
+	pickupBlock();
+	alloff();
+	
+	backward(1.0)
+	left(2.3);
+	findIntersection();
+	if(loc < 0)
+	{
+		right(1.2);
+	}
+	else
+	{
+		left(1.2);
+	}
+	alloff();
+}
 
+void pickupBlock()
+{
+	// to be completed later
+}
+
+void findIntersection()
+{
+	while(!isIntersection())
+	{
+		followLine(getSensorValue(FRONT_IR));
+	}
+	alloff();
+}
 
 void main()
 {
@@ -199,6 +248,7 @@ void main()
 	
 	int state = 0;
 	int cur_inter_loc = 0;
+	float time = 0.0;
 	
 	int i = 0;
 	int count;
@@ -220,11 +270,7 @@ void main()
 			count = 2;
 			for(i = 1; i <= 5; i++)
 			{
-				while(!isIntersection())
-				{
-					followLine(getSensorValue(FRONT_IR));
-				}
-				alloff();
+				findIntersection();
 				cur_inter_loc = 6 - i;
 				if(getSensorValue(l_side_ir) < L_LITE_VALUE - 12)
 				{
@@ -239,11 +285,7 @@ void main()
 			}
 			forward(1.0)
 			left(2.3);
-			while(!isIntersection())
-			{
-				followLine(getSensorValue(FRONT_IR));
-			}
-			alloff();
+			findIntersection();
 			state = 1;
 		}
 		
@@ -252,9 +294,20 @@ void main()
 		{
 			i = 0;
 			
-			if()
+			if(abs(blocks[i]) == cur_inter_loc)
 			{
-				
+				retrieveBlock(blocks[i]);
+				i++;
+				state = 2;
+			}
+			else
+			{
+				while(cur_inter_loc < abs(blocks[i]))
+				{
+					findIntersection();
+					cur_inter_loc++;
+				}
+				while(
 			}
 				
 		}
@@ -262,14 +315,31 @@ void main()
 		// deliver block
 		if(state == 2)
 		{
+			while(cur_inter_loc > 1)
+			{
+				findIntersection();
+				cur_inter_loc--;
+			}
 			
-		}
-		
-		if((l_side_ir >= IR_VALUE - 12)&&(r_side_ir >= IR_VALUE - 12))
-			followLine(front_ir);
-		else
-		{
+			time = seconds() + 5.0;
+			while(seconds() < time)
+			{
+				followLine(getSensorValue(FRONT_IR));
+			}
+			dropBlock();
 			
+			backward(1.0)
+			left(2.3);
+			findIntersection();
+			
+			state = 1;
+			
+			// Finished collecting all 3 blocks
+			if(i > 2)
+			{
+				all_off();
+				return;
+			}
 		}
         
     }
