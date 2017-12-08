@@ -386,7 +386,6 @@ void main()
                 backward(1.0);
                 left(2.3);
                 findIntersection();
-                i++;
                 state = 1;
                 
                 // Finished collecting all 3 blocks
