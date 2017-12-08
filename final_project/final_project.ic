@@ -10,19 +10,19 @@
 
 int LEFT_MOTOR = 1;                                         // port for left motor
 int RIGHT_MOTOR = 3;                                        // port for right motor
-int CLAW_MOTOR = 2;											// port for claw motor
+int CLAW_MOTOR = 2;           // port for claw motor
 int FRONT_IR = 3;                                           // analog port for the IR sensor on the front
-int RIGHT_IR = 4;											// analog port for the IR sensor on the right side
-int LEFT_IR = 5;											// analog port for the IR sensor on the left side
-int FRONT_LITE = 6;											// analog port for the photo sensor on the front
-int RIGHT_LITE = 7;											// analog port for the photo sensor on the right side
-int LEFT_LITE = 8;											// analog port for the photo sensor on the left side
-int IR_VALUE = 0;                                        	// value to determine if on tape
-int L_LITE_VALUE = 0;										// average value of light on left side
-int R_LITE_VALUE = 0;										// average value of light on right side
+int RIGHT_IR = 4;           // analog port for the IR sensor on the right side
+int LEFT_IR = 5;           // analog port for the IR sensor on the left side
+int FRONT_LITE = 6;           // analog port for the photo sensor on the front
+int RIGHT_LITE = 16;           // analog port for the photo sensor on the right side
+int LEFT_LITE = 17;           // analog port for the photo sensor on the left side
+int IR_VALUE = 0;                                         // value to determine if on tape
+int L_LITE_VALUE = 0;          // average value of light on left side
+int R_LITE_VALUE = 0;          // average value of light on right side
 int FRONT_LITE_VALUE = 0;
-float last = 0.0;											// float used to determine if last move was left (-) or right (+)
-int blocks[3] = {0,0,0};									// array to keep track of the 3 block locations found in the arena
+float last = 0.0;           // float used to determine if last move was left (-) or right (+)
+int blocks[3] = {0,0,0};         // array to keep track of the 3 block locations found in the arena
 
 
 
@@ -30,20 +30,22 @@ int blocks[3] = {0,0,0};									// array to keep track of the 3 block locations
  * Method from textbook (turtle.ic)   
  * to move robot forwards
  */
-void forward()
+void forward(float time)
 {
-    motor(LEFT_MOTOR, 30);
-    motor(RIGHT_MOTOR, 30);
+    motor(LEFT_MOTOR, 50);
+    motor(RIGHT_MOTOR, 50);
+    sleep(time);
 }
 
 /*
  * Method from textbook (turtle.ic)
  * to move robot backwards
  */
-void backward()
+void backward(float time)
 {
-    motor(LEFT_MOTOR, -30);
-    motor(RIGHT_MOTOR, -30);
+    motor(LEFT_MOTOR, -50);
+    motor(RIGHT_MOTOR, -50);
+    sleep(time);
 }
 
 /*
@@ -87,9 +89,9 @@ void stop(float time)
 int getSensorValue(int sensor_num)
 {
     int value;
-    value = analog(// float used to determine if last move was left (-) or right (+));
+    value = analog(sensor_num);
     
-    printf("s%d= %d", sensor_num, value);
+    //printf("\ns%d= %d", sensor_num, value);
     return value;
 }
 
@@ -103,260 +105,287 @@ void setLightValAvg()
 {
     int i = 0;
     int sum_ir = 0;
-	int sum_l = 0;
-	int sum_r = 0;
-	int sum_f = 0;
+    int sum_l = 0;
+    int sum_r = 0;
+    int sum_f = 0;
     while(i < 30){
         sum_ir += analog(FRONT_IR);
-		sum_l += analog(LEFT_LITE);
-		sum_r += analog(RIGHT_LITE);
-		sum_f += analog(FRONT_LITE);
+        sum_l += analog(LEFT_LITE);
+        sum_r += analog(RIGHT_LITE);
+        sum_f += analog(FRONT_LITE);
         sleep(0.1);
         i++;
     }
     IR_VALUE = sum_ir/30;
-	L_LITE_VALUE = sum_l/30;
-	R_LITE_VALUE = sum_r/30;
-	FRONT_LITE_VALUE = sum_f/30;
+    L_LITE_VALUE = sum_l/30;
+    R_LITE_VALUE = sum_r/30;
+    FRONT_LITE_VALUE = sum_f/30;
 }
 
-void followLine(int sensor)
+void followLine()
 {
-	if(sensor < 0){
-            printf("Error\n");
+    int sensor = getSensorValue(FRONT_IR);
+    if(sensor < 0){
+        printf("Error\n");
+    }
+    else{
+        if(sensor >= IR_VALUE - 12){                 // if the value is greater than/equal to (average - 12)
+            printf("black\n");
+            forward(0.0);                                  // go forward
+            
         }
         else{
-            if(sensor >= IR_VALUE - 12){                 // if the value is greater than/equal to (average - 12)
-                printf("black\n");
-                forward();                                  // go forward
-                
-            }
-            else{
-                while(!(sensor >= IR_VALUE - 12)){       // if the average is not greater than/equal to (average - 12)
-                    printf("white\n");
-                    stop(0.0);
-                    if(last > 0.0){                         // go left (-) if went right last time
+            while(!(sensor >= IR_VALUE - 12)){       // if the average is not greater than/equal to (average - 12)
+                printf("white\n");
+                stop(0.0);
+                if(last > 0.0){                         // go left (-) if went right last time
+                    last = last * -1.0;
+                    left((last + 0.2) * -1.0);
+                    stop(0.2);
+                    sensor = getSensorValue(FRONT_IR);          // Retrieve sensor's new value and loop
+                }
+                else{
+                    if(last < 0.0){                     // go right (+) if went left last time
                         last = last * -1.0;
-                        left((last + 0.2) * -1.0);
-                        stop(0.2);
-                        sensor = getSensorValue();          // Retrieve sensor's new value and loop
-                    }
-                    else{
-                        if(last < 0.0){                     // go right (+) if went left last time
-                            last = last * -1.0;
-                            right(last + 0.1);
-                            stop(0.0);
-                            sensor = getSensorValue();      // Retrieve sensor's new value and loop
-                        } 
-                        else{                               // default (0.0) - go left
-                            last = -0.2;
-                            left(last * -1.0);
-                            stop(0.0);
-                            sensor = getSensorValue();      // Retrieve sensor's new value and loop
-                        }
+                        right(last + 0.1);
+                        stop(0.0);
+                        sensor = getSensorValue(FRONT_IR);      // Retrieve sensor's new value and loop
+                    } 
+                    else{                               // default (0.0) - go left
+                        last = -0.2;
+                        left(last * -1.0);
+                        stop(0.0);
+                        sensor = getSensorValue(FRONT_IR);      // Retrieve sensor's new value and loop
                     }
                 }
-                last = 0.0;                                 // Reset value
             }
+            last = 0.0;                                 // Reset value
         }
+    }
+    
 }
 
 int abs(int value)
 {
-	int new = value;
-	if(new < 0)
-		new = new * -1;
-	return new;
+    int new = value;
+    if(new < 0)
+      new = new * -1;
+    return new;
 }
 
 void getBlockLocations(int index, int block_loc)
 {
-	int new = 6 - (abs(block_loc));
-	if(block_loc < 0)
-	{
-		new = new * -1;
-	}
-	blocks[index] = new;
+    int new = 6 - (abs(block_loc));
+    if(block_loc < 0)
+      {
+        new = new * -1;
+    }
+    blocks[index] = new;
 }
 
 int isIntersection()
 {
-	if(getSensorValue(FRONT_IR) >= IR_VALUE - 12
-	&& getSensorValue(LEFT_IR) >= IR_VALUE - 12
-	&& getSensorValue(RIGHT_IR) >= IR_VALUE - 12)
-	{
-		return 1
-	}
-	else
-	{
-		return 0;
-	}
+    //printf(", inside intersection()");
+    if(getSensorValue(FRONT_IR) >= IR_VALUE - 12
+       && getSensorValue(LEFT_IR) >= IR_VALUE - 12
+       && getSensorValue(RIGHT_IR) >= IR_VALUE - 12)
+      {
+        return 1;
+    }
+    else
+      {
+        return 0;
+    }
 }
 
 int retrieveBlock(int loc)
 {
-	int sen_val = 0;
-	if(loc < 0)
-	{
-		left(1.2);
-	}
-	else
-	{
-		right(1.2);
-	}
-	sen_val = getSensorValue(FRONT_LITE);
-	while(sen_val > FRONT_LITE_VALUE - 12)
-	{
-		followLine(getSensorValue(FRONT_IR);
-		sen_val = getSensorValue(FRONT_LITE);
-	}
-	
-	alloff();
-	pickupBlock();
-	
-	backward(1.0)
-	left(2.3);
-	findIntersection();
-	if(loc < 0)
-	{
-		right(1.2);
-	}
-	else
-	{
-		left(1.2);
-	}
-	alloff();
+    int sen_val = 0;
+    if(loc < 0)
+      {
+        left(1.2);
+    }
+    else
+      {
+        right(1.2);
+    }
+    sen_val = getSensorValue(FRONT_LITE);
+    while(sen_val > FRONT_LITE_VALUE - 12)
+      {
+        followLine();
+        sen_val = getSensorValue(FRONT_LITE);
+    }
+    
+    alloff();
+    pickupBlock();
+    
+    backward(1.0);
+    left(2.3);
+    findIntersection();
+    if(loc < 0)
+      {
+        right(1.2);
+    }
+    else
+      {
+        left(1.2);
+    }
+    alloff();
 }
 
 void pickupBlock()
 {
-	motor(CLAW_MOTOR, 20);
-	sleep(0.25);
-	alloff();
+    motor(CLAW_MOTOR, 20);
+    sleep(0.25);
+    alloff();
 }
 
-void dropoffBlock()
+void dropBlock()
 {
-	motor(CLAW_MOTOR, -15);
-	sleep(0.5);
-	alloff();
+    motor(CLAW_MOTOR, -15);
+    sleep(0.5);
+    alloff();
 }
 
 void findIntersection()
 {
-	while(!isIntersection())
-	{
-		followLine(getSensorValue(FRONT_IR));
-	}
-	alloff();
+    //printf(", findIntersection()");
+    while(isIntersection() == 0)
+      {
+        //printf(", before followLine");
+        followLine();
+    }
+    alloff();
+}
+
+int checkForAllBlocks()
+{
+    int i;
+    for(i = 0; i < 3; i++)
+      {
+        if(blocks[i] == 0)
+          return 0;
+    }
+    return 1;
 }
 
 void main()
 {
     int front_ir = 0;
-	int l_side_ir = 0;
-	int r_side_ir = 0;
-	int l_side_lite = 0;
-	int r_side_lite = 0;
-	
-	int state = 0;
-	int cur_inter_loc = 0;
-	float time = 0.0;
-	
-	int i = 0;
-	int count;
-	
-    printf("Start\n");
+    int l_side_ir = 0;
+    int r_side_ir = 0;
+    int l_side_lite = 0;
+    int r_side_lite = 0;
+    
+    int state = 0;
+    int cur_inter_loc = 0;
+    float time = 0.0;
+    
+    int i = 0;
+    int count;
+    
+    while(!start_button());
+    printf("\nStart!");
     setLightValAvg();                                       // calculates the baseline light average
-    front_ir = getSensorValue(FRONT_IR);                    // stores value from photo sensor
-    printf("AVG= %d", IR_VALUE);
+    //front_ir = getSensorValue(FRONT_IR);                    // stores value from photo sensor
     sleep(1.0);
-	
+    
+    
     while(!stop_button()){                                  // runs while we don't press the stop button
-        front_ir = getSensorValue(FRONT_IR);
-		l_side_ir = getSensorValue(LEFT_IR);
-		r_side_ir = getSensorValue(RIGHT_IR);
-		
-		// initial run to get block locations
-		if(state == 0)
-		{
-			count = 2;
-			for(i = 1; i <= 5; i++)
-			{
-				findIntersection();
-				cur_inter_loc = 6 - i;
-				if(getSensorValue(l_side_ir) < L_LITE_VALUE - 12)
-				{
-					getBlockLocations(count, i);
-					count--;
-				}
-				if(getSensorValue(r_side_ir) < R_LITE_VALUE - 12)
-				{
-					getBlockLocations(count, i*-1);
-					count--;
-				}
-			}
-			forward(1.0)
-			left(2.3);
-			findIntersection();
-			state = 1;
-		}
-		
-		// find next block
-		if(state == 1)
-		{
-			i = 0;
-			
-			if(abs(blocks[i]) == cur_inter_loc)
-			{
-				retrieveBlock(blocks[i]);
-				i++;
-				state = 2;
-			}
-			else
-			{
-				while(cur_inter_loc < abs(blocks[i]))
-				{
-					findIntersection();
-					cur_inter_loc++;
-				}
-				while(
-			}
-				
-		}
-		
-		// deliver block
-		if(state == 2)
-		{
-			while(cur_inter_loc > 1)
-			{
-				findIntersection();
-				cur_inter_loc--;
-			}
-			
-			time = seconds() + 5.0;
-			while(seconds() < time)
-			{
-				followLine(getSensorValue(FRONT_IR));
-			}
-			alloff();
-			
-			dropBlock();
-			
-			backward(1.0)
-			left(2.3);
-			findIntersection();
-			
-			state = 1;
-			
-			// Finished collecting all 3 blocks
-			if(i > 2)
-			{
-				all_off();
-				return;
-			}
-		}
+        //front_ir = getSensorValue(FRONT_IR);
+        //l_side_ir = getSensorValue(LEFT_IR);
+        //r_side_ir = getSensorValue(RIGHT_IR);
         
+        // initial run to get block locations
+        if(state == 0)
+          {
+            printf("\nState 0");
+            count = 2;
+            for(i = 1; i <= 5; i++)
+              {
+                //printf(", Inside for loop");
+                findIntersection();
+                cur_inter_loc = 6 - i;
+                if(getSensorValue(LEFT_IR) < L_LITE_VALUE - 12)
+                  {
+                    printf("\nFound block!");
+                    getBlockLocations(count, i);
+                    count--;
+                }
+                if(getSensorValue(RIGHT_IR) < R_LITE_VALUE - 12)
+                  {
+                    getBlockLocations(count, i*-1);
+                    count--;
+                }
+            }
+            
+            if(checkForAllBlocks())
+              {
+                forward(1.0);
+                left(2.3);
+                findIntersection();
+                state = 1;
+            }
+        }
+        
+        // find next block
+        if(state == 1)
+          {
+            printf("\nState 1");
+            i = 0;
+            
+            if(abs(blocks[i]) == cur_inter_loc)
+              {
+                retrieveBlock(blocks[i]);
+                i++;
+                state = 2;
+            }
+            else
+              {
+                while(cur_inter_loc < abs(blocks[i]))
+                  {
+                    findIntersection();
+                    cur_inter_loc++;
+                }
+                
+            }
+            
+            // deliver block
+            if(state == 2)
+              {
+                printf("\nState 2");
+                while(cur_inter_loc > 1)
+                  {
+                    findIntersection();
+                    cur_inter_loc--;
+                }
+                
+                time = seconds() + 5.0;
+                while(seconds() < time)
+                  {
+                    followLine();
+                }
+                alloff();
+                
+                dropBlock();
+                
+                backward(1.0);
+                left(2.3);
+                findIntersection();
+                
+                state = 1;
+                
+                // Finished collecting all 3 blocks
+                if(i > 2)
+                  {
+                    alloff();
+                    return;
+                }
+            }
+            
+        }
+        printf("\nEnd!");
+        alloff();
     }
-	alloff();
-} 
+}
+
