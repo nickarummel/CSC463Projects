@@ -11,19 +11,19 @@
 int LEFT_MOTOR = 1;                                         // port for left motor
 int RIGHT_MOTOR = 3;                                        // port for right motor
 int CLAW_MOTOR = 2;           // port for claw motor
-int FRONT_IR = 3;                                           // analog port for the IR sensor on the front
 int RIGHT_IR = 4;           // analog port for the IR sensor on the right side
 int LEFT_IR = 5;           // analog port for the IR sensor on the left side
 int FRONT_LITE = 6;           // analog port for the photo sensor on the front
 int RIGHT_LITE = 16;           // analog port for the photo sensor on the right side
 int LEFT_LITE = 17;           // analog port for the photo sensor on the left side
-int IR_VALUE = 0;                                         // value to determine if on tape
 int L_LITE_VALUE = 0;          // average value of light on left side
 int R_LITE_VALUE = 0;          // average value of light on right side
 int FRONT_LITE_VALUE = 0;
 float last = 0.0;           // float used to determine if last move was left (-) or right (+)
-int blocks[3] = {0,0,0};         // array to keep track of the 3 block locations found in the arena
-
+int blocks[3] = {-1,1,2};         // array to keep track of the 3 block locations found in the arena
+int l_power = 60;           // current power for the left motor
+int r_power = 60;           // current power for the right motor
+int default_power = 60;          // value that resets the motor power
 
 
 /*
@@ -32,8 +32,8 @@ int blocks[3] = {0,0,0};         // array to keep track of the 3 block locations
  */
 void forward(float time)
 {
-    motor(LEFT_MOTOR, 50);
-    motor(RIGHT_MOTOR, 50);
+    motor(LEFT_MOTOR, 60);
+    motor(RIGHT_MOTOR, 60);
     sleep(time);
 }
 
@@ -43,8 +43,8 @@ void forward(float time)
  */
 void backward(float time)
 {
-    motor(LEFT_MOTOR, -50);
-    motor(RIGHT_MOTOR, -50);
+    motor(LEFT_MOTOR, -60);
+    motor(RIGHT_MOTOR, -60);
     sleep(time);
 }
 
@@ -68,6 +68,19 @@ void left(float time)
     motor(LEFT_MOTOR, -85);
     motor(RIGHT_MOTOR, 85);
     sleep(time);
+}
+
+/*
+ * Function to turn the robot
+ * with a specific amount of power
+ * going to each motor.
+ */
+void turn(int right, int left)
+{
+    l_power = l_power + left;
+    r_power = r_power + right;
+    motor(RIGHT_MOTOR, r_power);
+    motor(LEFT_MOTOR, l_power);
 }
 
 /*
@@ -109,61 +122,55 @@ void setLightValAvg()
     int sum_r = 0;
     int sum_f = 0;
     while(i < 30){
-        sum_ir += analog(FRONT_IR);
         sum_l += analog(LEFT_LITE);
         sum_r += analog(RIGHT_LITE);
         sum_f += analog(FRONT_LITE);
         sleep(0.1);
         i++;
     }
-    IR_VALUE = sum_ir/30;
     L_LITE_VALUE = sum_l/30;
     R_LITE_VALUE = sum_r/30;
     FRONT_LITE_VALUE = sum_f/30;
 }
 
-void followLine()
+int calculateDelta()
 {
-    int sensor = getSensorValue(FRONT_IR);
-    if(sensor < 0){
-        printf("Error\n");
-    }
-    else{
-        if(sensor >= IR_VALUE - 12){                 // if the value is greater than/equal to (average - 12)
-            printf("black\n");
-            forward(0.0);                                  // go forward
-            
-        }
-        else{
-            while(!(sensor >= IR_VALUE - 12)){       // if the average is not greater than/equal to (average - 12)
-                printf("white\n");
-                stop(0.0);
-                if(last > 0.0){                         // go left (-) if went right last time
-                    last = last * -1.0;
-                    left((last + 0.2) * -1.0);
-                    stop(0.2);
-                    sensor = getSensorValue(FRONT_IR);          // Retrieve sensor's new value and loop
-                }
-                else{
-                    if(last < 0.0){                     // go right (+) if went left last time
-                        last = last * -1.0;
-                        right(last + 0.1);
-                        stop(0.0);
-                        sensor = getSensorValue(FRONT_IR);      // Retrieve sensor's new value and loop
-                    } 
-                    else{                               // default (0.0) - go left
-                        last = -0.2;
-                        left(last * -1.0);
-                        stop(0.0);
-                        sensor = getSensorValue(FRONT_IR);      // Retrieve sensor's new value and loop
-                    }
-                }
-            }
-            last = 0.0;                                 // Reset value
-        }
-    }
-    
+    int delta = (getSensorValue(RIGHT_IR)- 10) - getSensorValue(LEFT_IR);
+    return delta;
 }
+
+/*
+ * Takes the calculated difference
+ * of the crisp input values
+ * and calculates a fuzzy value.
+ */
+void fuzzify(int delta)
+{
+    float calc_val = (float)delta/255.0;
+    l_power = default_power;
+    r_power = default_power;
+    defuzzify(calc_val);
+}
+
+/*
+ * Takes the fuzzy value and maps it
+ * to a crisp output value for turning.
+ */
+void defuzzify(float fuzz_val){
+    if(fuzz_val < 0.0){
+        fuzz_val = fuzz_val*100.0*4.0;
+        turn(abs((int)fuzz_val), (int)fuzz_val);
+        return;
+    }
+    if(fuzz_val > 0.0){
+        fuzz_val = fuzz_val*100.0*4.0;
+        turn((int)(fuzz_val*-1.0), (int)fuzz_val);
+        return;
+    }
+    else
+      turn(0, 0);
+}
+
 
 int abs(int value)
 {
@@ -186,9 +193,8 @@ void getBlockLocations(int index, int block_loc)
 int isIntersection()
 {
     //printf(", inside intersection()");
-    if(getSensorValue(FRONT_IR) >= IR_VALUE - 12
-       && getSensorValue(LEFT_IR) >= IR_VALUE - 12
-       && getSensorValue(RIGHT_IR) >= IR_VALUE - 12)
+    if(getSensorValue(LEFT_IR) > 150
+       && getSensorValue(RIGHT_IR) > 150)
       {
         return 1;
     }
@@ -201,6 +207,8 @@ int isIntersection()
 int retrieveBlock(int loc)
 {
     int sen_val = 0;
+    int delta;
+    forward(1.0);
     if(loc < 0)
       {
         left(1.2);
@@ -210,9 +218,10 @@ int retrieveBlock(int loc)
         right(1.2);
     }
     sen_val = getSensorValue(FRONT_LITE);
-    while(sen_val > FRONT_LITE_VALUE - 12)
+    while(sen_val > 10)
       {
-        followLine();
+        delta = calculateDelta();
+        fuzzify(delta);
         sen_val = getSensorValue(FRONT_LITE);
     }
     
@@ -249,13 +258,15 @@ void dropBlock()
 
 void findIntersection()
 {
+    int delta;
     //printf(", findIntersection()");
     while(isIntersection() == 0)
       {
-        //printf(", before followLine");
-        followLine();
+        delta = calculateDelta();
+        fuzzify(delta);
     }
     alloff();
+    sleep(1.0);
 }
 
 int checkForAllBlocks()
@@ -271,18 +282,17 @@ int checkForAllBlocks()
 
 void main()
 {
-    int front_ir = 0;
     int l_side_ir = 0;
     int r_side_ir = 0;
     int l_side_lite = 0;
     int r_side_lite = 0;
     
-    int state = 0;
+    int state = 1;
     int cur_inter_loc = 0;
     float time = 0.0;
     
     int i = 0;
-    int count;
+    int count, delta;
     
     while(!start_button());
     printf("\nStart!");
@@ -292,9 +302,6 @@ void main()
     
     
     while(!stop_button()){                                  // runs while we don't press the stop button
-        //front_ir = getSensorValue(FRONT_IR);
-        //l_side_ir = getSensorValue(LEFT_IR);
-        //r_side_ir = getSensorValue(RIGHT_IR);
         
         // initial run to get block locations
         if(state == 0)
@@ -303,29 +310,32 @@ void main()
             count = 2;
             for(i = 1; i <= 5; i++)
               {
-                //printf(", Inside for loop");
                 findIntersection();
                 cur_inter_loc = 6 - i;
-                if(getSensorValue(LEFT_IR) < L_LITE_VALUE - 12)
+                if(getSensorValue(LEFT_LITE) < L_LITE_VALUE - 12)
                   {
                     printf("\nFound block!");
                     getBlockLocations(count, i);
                     count--;
                 }
-                if(getSensorValue(RIGHT_IR) < R_LITE_VALUE - 12)
+                if(getSensorValue(RIGHT_LITE) < R_LITE_VALUE - 12)
                   {
                     getBlockLocations(count, i*-1);
                     count--;
                 }
+                forward(1.0);
+                alloff();
+                sleep(1.0);
             }
+            state = 1;
             
-            if(checkForAllBlocks())
+            /*if(checkForAllBlocks())
               {
                 forward(1.0);
                 left(2.3);
                 findIntersection();
                 state = 1;
-            }
+            }*/
         }
         
         // find next block
@@ -363,7 +373,8 @@ void main()
                 time = seconds() + 5.0;
                 while(seconds() < time)
                   {
-                    followLine();
+                    delta = calculateDelta();
+                    fuzzify(delta);
                 }
                 alloff();
                 
