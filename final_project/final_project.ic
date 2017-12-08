@@ -8,22 +8,22 @@
  * blocks from various points.
  */
 
-int LEFT_MOTOR = 1;                                         // port for left motor
-int RIGHT_MOTOR = 3;                                        // port for right motor
-int CLAW_MOTOR = 2;           // port for claw motor
-int RIGHT_IR = 4;           // analog port for the IR sensor on the right side
+int LEFT_MOTOR = 1;        // port for left motor
+int RIGHT_MOTOR = 3;       // port for right motor
+int CLAW_MOTOR = 2;        // port for claw motor
+int RIGHT_IR = 4;          // analog port for the IR sensor on the right side
 int LEFT_IR = 5;           // analog port for the IR sensor on the left side
-int FRONT_LITE = 6;           // analog port for the photo sensor on the front
-int RIGHT_LITE = 16;           // analog port for the photo sensor on the right side
-int LEFT_LITE = 17;           // analog port for the photo sensor on the left side
-int L_LITE_VALUE = 0;          // average value of light on left side
-int R_LITE_VALUE = 0;          // average value of light on right side
+int FRONT_LITE = 6;        // analog port for the photo sensor on the front
+int RIGHT_LITE = 16;       // analog port for the photo sensor on the right side
+int LEFT_LITE = 17;        // analog port for the photo sensor on the left side
+int L_LITE_VALUE = 0;      // average value of light on left side
+int R_LITE_VALUE = 0;      // average value of light on right side
 int FRONT_LITE_VALUE = 0;
-float last = 0.0;           // float used to determine if last move was left (-) or right (+)
-int blocks[3] = {-1,1,2};         // array to keep track of the 3 block locations found in the arena
-int l_power = 60;           // current power for the left motor
-int r_power = 60;           // current power for the right motor
-int default_power = 60;          // value that resets the motor power
+float last = 0.0;          // float used to determine if last move was left (-) or right (+)
+int blocks[3] = {2,-3,4};   // array to keep track of the 3 block locations found in the arena
+int l_power = 60;          // current power for the left motor
+int r_power = 60;          // current power for the right motor
+int default_power = 60;    // value that resets the motor power
 
 
 /*
@@ -104,7 +104,7 @@ int getSensorValue(int sensor_num)
     int value;
     value = analog(sensor_num);
     
-    //printf("\ns%d= %d", sensor_num, value);
+    printf("\ns%d= %d", sensor_num, value);
     return value;
 }
 
@@ -135,7 +135,7 @@ void setLightValAvg()
 
 int calculateDelta()
 {
-    int delta = (getSensorValue(RIGHT_IR)- 10) - getSensorValue(LEFT_IR);
+    int delta = getSensorValue(RIGHT_IR) - getSensorValue(LEFT_IR);
     return delta;
 }
 
@@ -193,8 +193,8 @@ void getBlockLocations(int index, int block_loc)
 int isIntersection()
 {
     //printf(", inside intersection()");
-    if(getSensorValue(LEFT_IR) > 150
-       && getSensorValue(RIGHT_IR) > 150)
+    if(getSensorValue(LEFT_IR) > 160
+       && getSensorValue(RIGHT_IR) > 160)
       {
         return 1;
     }
@@ -231,6 +231,7 @@ int retrieveBlock(int loc)
     backward(1.0);
     left(2.3);
     findIntersection();
+    forward(1.0);
     if(loc < 0)
       {
         right(1.2);
@@ -328,6 +329,7 @@ void main()
                 sleep(1.0);
             }
             state = 1;
+            i = 0;
             
             /*if(checkForAllBlocks())
               {
@@ -342,7 +344,6 @@ void main()
         if(state == 1)
           {
             printf("\nState 1");
-            i = 0;
             
             if(abs(blocks[i]) == cur_inter_loc)
               {
@@ -355,6 +356,7 @@ void main()
                 while(cur_inter_loc < abs(blocks[i]))
                   {
                     findIntersection();
+                    forward(1.0);
                     cur_inter_loc++;
                 }
                 
@@ -368,9 +370,10 @@ void main()
                   {
                     findIntersection();
                     cur_inter_loc--;
+                    forward(1.0);
                 }
                 
-                time = seconds() + 5.0;
+                time = seconds() + 1.0;
                 while(seconds() < time)
                   {
                     delta = calculateDelta();
@@ -383,7 +386,7 @@ void main()
                 backward(1.0);
                 left(2.3);
                 findIntersection();
-                
+                i++;
                 state = 1;
                 
                 // Finished collecting all 3 blocks
