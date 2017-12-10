@@ -8,9 +8,9 @@
  * blocks from various points.
  */
 
-int LEFT_MOTOR = 1;        // port for left motor
+int LEFT_MOTOR = 0;        // port for left motor
 int RIGHT_MOTOR = 3;       // port for right motor
-int CLAW_MOTOR = 2;        // port for claw motor
+int CLAW_MOTOR = 1;        // port for claw motor
 int RIGHT_IR = 4;          // analog port for the IR sensor on the right side
 int LEFT_IR = 5;           // analog port for the IR sensor on the left side
 int FRONT_LITE = 6;        // analog port for the photo sensor on the front
