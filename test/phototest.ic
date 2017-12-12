@@ -1,0 +1,17 @@
+int right = 16;
+int left = 27;
+
+int main()
+{
+    while(1)
+      {
+        if(start_button())
+          {
+            while(!stop_button())
+              {
+                printf("\nright=%dleft=%d", analog(right), analog(left));
+                sleep(1.0);
+            }
+        }
+    }
+}

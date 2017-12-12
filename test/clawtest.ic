@@ -1,0 +1,8 @@
+int main()
+{
+    //motor(1,15);
+    //sleep(1.0);
+    motor(2,-15);
+    sleep(0.5);
+    alloff();
+}

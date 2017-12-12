@@ -1,8 +1,10 @@
 void main()
 {
-    int sensor = 0;
     while(1) {
-        printf("\nL= %d, R= %d",analog(4),analog(3));
-        sleep(2.0);
+        //printf("\nR= %d, L= %d, P= %d",analog(5), analog(4), analog(3));
+        //printf("\nOld= %d, Ex= %d", analog(3), analog(16));
+        printf("\nR=%d, L=%d", analog(4), analog(5));
+        //printf("\nFL= %d", analog(6));
+        sleep(1.0);
     }
 }

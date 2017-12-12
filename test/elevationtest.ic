@@ -1,0 +1,8 @@
+int main()
+{
+    while(1)
+    {
+        printf("\n%d", analog(5));
+        sleep(1.0);
+    }
+}

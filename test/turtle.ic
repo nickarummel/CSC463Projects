@@ -44,7 +44,7 @@ void main()
     while(!stop_button()){
         forward();
         sleep(2.0);
-        
+        /*
         backward();
         sleep(2.0);
         
@@ -55,7 +55,7 @@ void main()
         sleep(2.0);
         
         stop();
-        sleep(2.0);
+        sleep(2.0);*/
     }
     alloff();
 } 

@@ -1,0 +1,6 @@
+int main()
+{
+    int time = (int)seconds();
+    printf("\nT = %d ", time);
+    printf("rand = %d", time%9);
+}
