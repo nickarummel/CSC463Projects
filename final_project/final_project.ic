@@ -15,12 +15,12 @@ int RIGHT_IR = 4;          // analog port for the IR sensor on the right side
 int LEFT_IR = 5;           // analog port for the IR sensor on the left side
 int FRONT_LITE = 6;        // analog port for the photo sensor on the front
 int RIGHT_LITE = 16;       // analog port for the photo sensor on the right side
-int LEFT_LITE = 17;        // analog port for the photo sensor on the left side
+int LEFT_LITE = 27;        // analog port for the photo sensor on the left side
 int L_LITE_VALUE = 0;      // average value of light on left side
 int R_LITE_VALUE = 0;      // average value of light on right side
 int FRONT_LITE_VALUE = 0;
 float last = 0.0;          // float used to determine if last move was left (-) or right (+)
-int blocks[3] = {2,-3,4};   // array to keep track of the 3 block locations found in the arena
+int blocks[3] = {0,0,0};   // array to keep track of the 3 block locations found in the arena
 int l_power = 60;          // current power for the left motor
 int r_power = 60;          // current power for the right motor
 int default_power = 60;    // value that resets the motor power
@@ -182,19 +182,22 @@ int abs(int value)
 
 void getBlockLocations(int index, int block_loc)
 {
-    int new = 6 - (abs(block_loc));
-    if(block_loc < 0)
+    if(index >= 0)
       {
-        new = new * -1;
+       int new = 6 - (abs(block_loc));
+       if(block_loc < 0)
+         {
+           new = new * -1;
+       }
+        blocks[index] = new;
     }
-    blocks[index] = new;
 }
 
 int isIntersection()
 {
     //printf(", inside intersection()");
-    if(getSensorValue(LEFT_IR) > 160
-       && getSensorValue(RIGHT_IR) > 160)
+    if(getSensorValue(LEFT_IR) > 165
+       && getSensorValue(RIGHT_IR) > 165)
       {
         return 1;
     }
@@ -246,7 +249,7 @@ int retrieveBlock(int loc)
 void pickupBlock()
 {
     motor(CLAW_MOTOR, 20);
-    sleep(0.25);
+    sleep(0.5);
     alloff();
 }
 
@@ -288,7 +291,7 @@ void main()
     int l_side_lite = 0;
     int r_side_lite = 0;
     
-    int state = 1;
+    int state = 0;
     int cur_inter_loc = 0;
     float time = 0.0;
     
@@ -313,13 +316,13 @@ void main()
               {
                 findIntersection();
                 cur_inter_loc = 6 - i;
-                if(getSensorValue(LEFT_LITE) < L_LITE_VALUE - 12)
+                if(getSensorValue(LEFT_LITE) < L_LITE_VALUE-2)
                   {
                     printf("\nFound block!");
                     getBlockLocations(count, i);
                     count--;
                 }
-                if(getSensorValue(RIGHT_LITE) < R_LITE_VALUE - 12)
+                if(getSensorValue(RIGHT_LITE) < R_LITE_VALUE-7)
                   {
                     getBlockLocations(count, i*-1);
                     count--;
@@ -328,21 +331,26 @@ void main()
                 alloff();
                 sleep(1.0);
             }
-            state = 1;
-            i = 0;
+            //state = 1;
+            //i = 0;
             
-            /*if(checkForAllBlocks())
+            if(checkForAllBlocks() == 1)
               {
-                forward(1.0);
+                backward(1.0);
                 left(2.3);
                 findIntersection();
+                i = 0;
                 state = 1;
-            }*/
+
+            }
         }
         
         // find next block
         if(state == 1)
           {
+            l_power = 70;
+            r_power = 70;
+            default_power = 70;
             printf("\nState 1");
             
             if(abs(blocks[i]) == cur_inter_loc)
@@ -365,6 +373,10 @@ void main()
             // deliver block
             if(state == 2)
               {
+                l_power = 60;
+                r_power = 60;
+                default_power = 60;
+
                 printf("\nState 2");
                 while(cur_inter_loc > 1)
                   {
@@ -386,14 +398,29 @@ void main()
                 backward(1.0);
                 left(2.3);
                 findIntersection();
-                state = 1;
                 
                 // Finished collecting all 3 blocks
                 if(i > 2)
                   {
-                    alloff();
-                    return;
+                    state = 3;
                 }
+                else
+                  {
+                    state = 1;
+                }
+            }
+            
+            if (state == 3)
+              {
+                while(cur_inter_loc <= 5)
+                  {
+                    findIntersection();
+                    cur_inter_loc++;
+                    forward(1.0);
+                }
+                alloff();
+                return;
+                
             }
             
         }
