@@ -18,7 +18,7 @@ int RIGHT_LITE = 16;       // analog port for the photo sensor on the right side
 int LEFT_LITE = 27;        // analog port for the photo sensor on the left side
 int L_LITE_VALUE = 0;      // average value of light on left side
 int R_LITE_VALUE = 0;      // average value of light on right side
-int FRONT_LITE_VALUE = 0;
+int FRONT_LITE_VALUE = 0;  // average value of light on the front
 float last = 0.0;          // float used to determine if last move was left (-) or right (+)
 int blocks[3] = {0,0,0};   // array to keep track of the 3 block locations found in the arena
 int l_power = 60;          // current power for the left motor
@@ -103,7 +103,6 @@ int getSensorValue(int sensor_num)
 {
     int value;
     value = analog(sensor_num);
-    
     printf("\ns%d= %d", sensor_num, value);
     return value;
 }
@@ -121,7 +120,8 @@ void setLightValAvg()
     int sum_l = 0;
     int sum_r = 0;
     int sum_f = 0;
-    while(i < 30){
+    while(i < 30)
+	{
         sum_l += analog(LEFT_LITE);
         sum_r += analog(RIGHT_LITE);
         sum_f += analog(FRONT_LITE);
@@ -133,6 +133,11 @@ void setLightValAvg()
     FRONT_LITE_VALUE = sum_f/30;
 }
 
+/*
+ * Calculates the difference between the 
+ * right reflective-opto sensor and the 
+ * left reflective-opto sensor.
+ */
 int calculateDelta()
 {
     int delta = getSensorValue(RIGHT_IR) - getSensorValue(LEFT_IR);
@@ -157,12 +162,14 @@ void fuzzify(int delta)
  * to a crisp output value for turning.
  */
 void defuzzify(float fuzz_val){
-    if(fuzz_val < 0.0){
+    if(fuzz_val < 0.0)
+	{
         fuzz_val = fuzz_val*100.0*4.0;
         turn(abs((int)fuzz_val), (int)fuzz_val);
         return;
     }
-    if(fuzz_val > 0.0){
+    if(fuzz_val > 0.0)
+	{
         fuzz_val = fuzz_val*100.0*4.0;
         turn((int)(fuzz_val*-1.0), (int)fuzz_val);
         return;
@@ -171,7 +178,11 @@ void defuzzify(float fuzz_val){
       turn(0, 0);
 }
 
-
+/*
+ * Calculates the absolute value
+ * of an integer passed in as a 
+ * parameter value.
+ */
 int abs(int value)
 {
     int new = value;
@@ -180,49 +191,70 @@ int abs(int value)
     return new;
 }
 
+/*
+ * Determines what the block's locations
+ * should be based on the location value.
+ * The location is reverse-coded so that
+ * the robot will find the block starting
+ * from the collection area.
+ */
 void getBlockLocations(int index, int block_loc)
 {
     if(index >= 0)
-      {
+    {
        int new = 6 - (abs(block_loc));
        if(block_loc < 0)
-         {
+       {
            new = new * -1;
        }
-        blocks[index] = new;
+       blocks[index] = new;
     }
 }
 
+/*
+ * Checks if both reflective-opto sensors
+ * are on the line. If so, the robot has
+ * reached an intersection and returns 1.
+ * Otherwise, returns 0.
+ */
 int isIntersection()
 {
-    //printf(", inside intersection()");
     if(getSensorValue(LEFT_IR) > 165
        && getSensorValue(RIGHT_IR) > 165)
-      {
+    {
         return 1;
     }
     else
-      {
+    {
         return 0;
     }
 }
 
+/*
+ * Once the robot turns at an intersection
+ * to collect a block, this function is used
+ * to find the block by following the line and
+ * finding the block using the front photo
+ * sensor. The block is picked up with the claw,
+ * returns to the intersection, and turns towards
+ * the collection area.
+ */
 int retrieveBlock(int loc)
 {
     int sen_val = 0;
     int delta;
     forward(1.0);
     if(loc < 0)
-      {
+    {
         left(1.2);
     }
     else
-      {
+    {
         right(1.2);
     }
     sen_val = getSensorValue(FRONT_LITE);
     while(sen_val > 10)
-      {
+    {
         delta = calculateDelta();
         fuzzify(delta);
         sen_val = getSensorValue(FRONT_LITE);
@@ -236,16 +268,20 @@ int retrieveBlock(int loc)
     findIntersection();
     forward(1.0);
     if(loc < 0)
-      {
+    {
         right(1.2);
     }
     else
-      {
+    {
         left(1.2);
     }
     alloff();
 }
 
+/*
+ * Operates the claw motor to grab the
+ * block.
+ */
 void pickupBlock()
 {
     motor(CLAW_MOTOR, 20);
@@ -253,89 +289,99 @@ void pickupBlock()
     alloff();
 }
 
+/*
+ * Operates the claw motor to release
+ * the block.
+ */
 void dropBlock()
 {
-    motor(CLAW_MOTOR, -15);
+    motor(CLAW_MOTOR, -20);
     sleep(0.5);
     alloff();
 }
 
+/*
+ * A core function for the robot's
+ * navigation. While the robot has
+ * not found the intersection, it will
+ * continue to follow the line in the
+ * arena utilizing the fuzzy logic
+ * line follow algorithm. 
+ */
 void findIntersection()
 {
     int delta;
-    //printf(", findIntersection()");
     while(isIntersection() == 0)
-      {
+    {
         delta = calculateDelta();
         fuzzify(delta);
     }
     alloff();
-    sleep(1.0);
 }
 
+/*
+ * Walks through the array of
+ * found block locations to make
+ * sure all three blocks were found.
+ * If at least one block was not found,
+ * return 0. If all blocks were found,
+ * return 1.
+ */
 int checkForAllBlocks()
 {
     int i;
     for(i = 0; i < 3; i++)
-      {
+    {
         if(blocks[i] == 0)
-          return 0;
+        return 0;
     }
     return 1;
 }
 
 void main()
 {
-    int l_side_ir = 0;
-    int r_side_ir = 0;
-    int l_side_lite = 0;
-    int r_side_lite = 0;
-    
     int state = 0;
     int cur_inter_loc = 0;
     float time = 0.0;
-    
     int i = 0;
     int count, delta;
     
     while(!start_button());
     printf("\nStart!");
-    setLightValAvg();                                       // calculates the baseline light average
-    //front_ir = getSensorValue(FRONT_IR);                    // stores value from photo sensor
-    sleep(1.0);
+	
+	// calculates the baseline light average
+    setLightValAvg();
     
-    
-    while(!stop_button()){                                  // runs while we don't press the stop button
-        
-        // initial run to get block locations
+    while(!stop_button())
+	{
+        // Stage 0 - initial run to get block locations
         if(state == 0)
-          {
+        {
             printf("\nState 0");
             count = 2;
             for(i = 1; i <= 5; i++)
-              {
+            {
                 findIntersection();
                 cur_inter_loc = 6 - i;
                 if(getSensorValue(LEFT_LITE) < L_LITE_VALUE-2)
-                  {
-                    printf("\nFound block!");
+                {
+					// found block on the left
                     getBlockLocations(count, i);
                     count--;
                 }
                 if(getSensorValue(RIGHT_LITE) < R_LITE_VALUE-7)
-                  {
+                {
+					// found block on the right
                     getBlockLocations(count, i*-1);
                     count--;
                 }
                 forward(1.0);
                 alloff();
-                sleep(1.0);
             }
-            //state = 1;
-            //i = 0;
             
             if(checkForAllBlocks() == 1)
-              {
+            {
+				// transition to state 1
                 backward(1.0);
                 left(2.3);
                 findIntersection();
@@ -345,49 +391,54 @@ void main()
             }
         }
         
-        // find next block
+        // State 1 - collect next block
         if(state == 1)
-          {
+        {
+			// increase power for uphill
             l_power = 70;
             r_power = 70;
             default_power = 70;
             printf("\nState 1");
             
             if(abs(blocks[i]) == cur_inter_loc)
-              {
+            {
+				// at next block's intersection
                 retrieveBlock(blocks[i]);
                 i++;
                 state = 2;
             }
             else
-              {
+            {
+				// find intersection of next block
                 while(cur_inter_loc < abs(blocks[i]))
-                  {
+                {
                     findIntersection();
                     forward(1.0);
                     cur_inter_loc++;
                 }
-                
             }
             
-            // deliver block
+            // State 2 - deliver block
             if(state == 2)
-              {
+            {
+				// decrease power for downhill
                 l_power = 60;
                 r_power = 60;
                 default_power = 60;
 
                 printf("\nState 2");
                 while(cur_inter_loc > 1)
-                  {
+                {
+					// return to first intersection
                     findIntersection();
                     cur_inter_loc--;
                     forward(1.0);
                 }
                 
-                time = seconds() + 1.0;
+				// move into collection area
+                time = seconds() + 0.75;
                 while(seconds() < time)
-                  {
+                {
                     delta = calculateDelta();
                     fuzzify(delta);
                 }
@@ -395,34 +446,37 @@ void main()
                 
                 dropBlock();
                 
-                backward(1.0);
+                backward(0.75);
                 left(2.3);
                 findIntersection();
                 
-                // Finished collecting all 3 blocks
+
                 if(i > 2)
-                  {
+                {
+			        // Finished collecting all 3 blocks
                     state = 3;
                 }
                 else
-                  {
+                {
+					// More blocks to collect
                     state = 1;
                 }
             }
-            
+			
+            // State 3 - Return to beginning after
+			// all blocks are collected
             if (state == 3)
-              {
+            {
                 while(cur_inter_loc <= 5)
-                  {
+                {
+					// follow the intersections to beginning
                     findIntersection();
                     cur_inter_loc++;
                     forward(1.0);
                 }
                 alloff();
                 return;
-                
             }
-            
         }
         printf("\nEnd!");
         alloff();
